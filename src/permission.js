@@ -1,17 +1,17 @@
 import router from './router'
 import store from './store'
 import { Message } from 'element-ui'
-import NProgress from 'nprogress' // progress bar
+import NProgress from 'nprogress' // 进度条
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
 import getPageTitle from '@/utils/get-page-title'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
-const whiteList = ['/login'] // no redirect whitelist
+const whiteList = ['/login'] // 路由白名单
 
 router.beforeEach(async(to, from, next) => {
-  // start progress bar
+  // 路由跳转前置钩子函数
   NProgress.start()
 
   // set page title
@@ -20,7 +20,9 @@ router.beforeEach(async(to, from, next) => {
   // determine whether the user has logged in
   const hasToken = getToken()
 
+  debugger
   if (hasToken) {
+    debugger
     if (to.path === '/login') {
       // if is logged in, redirect to the home page
       next({ path: '/' })

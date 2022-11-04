@@ -30,8 +30,11 @@ const mutations = {
 const actions = {
   // user login
   login({ commit }, userInfo) {
+    debugger
+    // debugger
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
+      debugger
       login({ username: username.trim(), password: password }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.token)
