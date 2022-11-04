@@ -39,7 +39,7 @@ module.exports = {
     proxy: {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
-        target: `http://localhost:8088`,
+        target: `http://localhost:8066/api/bm`,
         changeOrigin: true,//代理开启标志
         //会将 /dev-api 替换为 '',也就是 /dev-api 会移除
         // 如 /dev-api/db.json  代理到 https://localhost:9258/db.json

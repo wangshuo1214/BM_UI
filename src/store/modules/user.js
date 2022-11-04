@@ -28,17 +28,14 @@ const mutations = {
 }
 
 const actions = {
-  // user login
+  // 登录
   login({ commit }, userInfo) {
-    debugger
-    // debugger
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
-      debugger
       login({ username: username.trim(), password: password }).then(response => {
         const { data } = response
-        commit('SET_TOKEN', data.token)
-        setToken(data.token)
+        commit('SET_TOKEN', data)
+        setToken(data)
         resolve()
       }).catch(error => {
         reject(error)
@@ -46,16 +43,14 @@ const actions = {
     })
   },
 
-  // get user info
+  // 获取用户信息
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response
-
         if (!data) {
           return reject('Verification failed, please Login again.')
         }
-
         const { name, avatar } = data
 
         commit('SET_NAME', name)
@@ -67,7 +62,7 @@ const actions = {
     })
   },
 
-  // user logout
+  // 退出登录
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
