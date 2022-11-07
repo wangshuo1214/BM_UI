@@ -55,6 +55,19 @@ export const constantRoutes = [
   },
 
   {
+    path: '/dept',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Dept',
+        component: () => import('@/views/dept/index'),
+        meta: { title: '部门管理', icon: 'form' }
+      }
+    ]
+  },
+
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',
