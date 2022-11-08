@@ -14,6 +14,7 @@ import router from './router'
 
 import '@/icons' // icon
 import '@/permission' // permission control
+import { handleTree, parseTime } from '@/utils/bm'
 
 /**
  * If you don't want to use mock-server
@@ -27,6 +28,10 @@ if (process.env.NODE_ENV === 'production') {
   const { mockXHR } = require('../mock')
   mockXHR()
 }
+
+// 全局方法挂载
+Vue.prototype.handleTree = handleTree
+Vue.prototype.parseTime = parseTime
 
 // set ElementUI lang to EN
 Vue.use(ElementUI, { locale })
