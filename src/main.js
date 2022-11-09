@@ -33,6 +33,9 @@ if (process.env.NODE_ENV === 'production') {
 Vue.prototype.handleTree = handleTree
 Vue.prototype.parseTime = parseTime
 Vue.prototype.resetForm = resetForm
+Vue.prototype.msgSuccess = function (msg) {
+  this.$message({ showClose: true, message: msg, type: 'success' })
+}
 
 // set ElementUI lang to EN
 Vue.use(ElementUI, { locale })

@@ -41,21 +41,24 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template>
+        <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
             icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-plus"
+            @click="handleAdd(scope.row)"
           >新增</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -63,7 +66,7 @@
 
     <!-- 添加或修改部门对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col v-if="form.parentId !== 0" :span="24">
             <el-form-item label="上级部门" prop="parentId">
@@ -100,15 +103,16 @@
           <el-col :span="12">
             <el-form-item label="部门状态">
               <el-radio-group v-model="form.status">
-                <el-radio :label="1">正常</el-radio>
-                <el-radio :label="0">停用</el-radio>
+                <!-- label表示用的是字符串 :label表示用的是数字 -->
+                <el-radio label="1">正常</el-radio>
+                <el-radio label="0">停用</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -116,7 +120,7 @@
 </template>
 
 <script>
-import { listDept } from '@/api/dept'
+import { listDept, updateDept, addDept, getDept, listDeptExcludeChild, delDept } from '@/api/dept'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
@@ -141,10 +145,28 @@ export default {
       title: '',
       // 表单参数
       form: {
-        status: 1
+        status: '1'
       },
       // 部门树选项
-      deptOptions: []
+      deptOptions: [],
+      rules: {
+        parentId: [
+          { required: true, message: '上级部门不能为空', trigger: 'blur' }
+        ],
+        deptName: [
+          { required: true, message: '部门名称不能为空', trigger: 'blur' }
+        ],
+        orderNum: [
+          { required: true, message: '显示排序不能为空', trigger: 'blur' }
+        ],
+        phone: [
+          {
+            pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
+            message: '请输入正确的手机号码',
+            trigger: 'blur'
+          }
+        ]
+      }
     }
   },
   created() {
@@ -173,7 +195,7 @@ export default {
         leader: undefined,
         phone: undefined,
         email: undefined,
-        status: 1
+        status: '1'
       }
       this.resetForm('form')
     },
@@ -209,6 +231,51 @@ export default {
     cancel() {
       this.open = false
       this.reset()
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset()
+      getDept(row.deptId).then(response => {
+        this.form = response.data
+        this.open = true
+        this.title = '修改部门'
+      })
+      listDeptExcludeChild(row.deptId).then(response => {
+	      this.deptOptions = this.handleTree(response.data, 'deptId')
+      })
+    },
+    /** 提交按钮 */
+    submitForm: function() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          if (this.form.deptId !== undefined) {
+            updateDept(this.form).then(response => {
+              this.msgSuccess('修改成功')
+              this.open = false
+              this.getList()
+            })
+          } else {
+            addDept(this.form).then(response => {
+              this.msgSuccess('新增成功')
+              this.open = false
+              this.getList()
+            })
+          }
+        }
+      })
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      this.$confirm('是否确认删除名称为"' + row.deptName + '"的数据项?', '警告', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(function() {
+          return delDept(row.deptId)
+        }).then(() => {
+          this.getList()
+          this.msgSuccess('删除成功')
+        }).catch(()=>{});//注意这里，这里是重点！！！
     }
   }
 }
