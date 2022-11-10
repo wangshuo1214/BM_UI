@@ -65,7 +65,7 @@
     </el-table>
 
     <!-- 添加或修改部门对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="600px" v-dialogDrag append-to-body>
+    <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col v-if="form.parentId !== 0" :span="24">
@@ -207,7 +207,9 @@ export default {
       }
       this.open = true
       this.title = '添加部门'
+      // eslint-disable-next-line
       listDept({}).then(response => {
+        // eslint-disable-next-line
 	      this.deptOptions = this.handleTree(response.data, 'deptId')
       })
     },
@@ -240,7 +242,9 @@ export default {
         this.open = true
         this.title = '修改部门'
       })
+      // eslint-disable-next-line
       listDeptExcludeChild(row.deptId).then(response => {
+        // eslint-disable-next-line
 	      this.deptOptions = this.handleTree(response.data, 'deptId')
       })
     },
@@ -267,15 +271,15 @@ export default {
     /** 删除按钮操作 */
     handleDelete(row) {
       this.$confirm('是否确认删除名称为"' + row.deptName + '"的数据项?', '警告', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(function() {
-          return delDept(row.deptId)
-        }).then(() => {
-          this.getList()
-          this.msgSuccess('删除成功')
-        }).catch(()=>{});//注意这里，这里是重点！！！
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delDept(row.deptId)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      }).catch(() => {})
     }
   }
 }

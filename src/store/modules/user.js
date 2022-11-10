@@ -49,7 +49,7 @@ const actions = {
       getInfo(state.token).then(response => {
         const { data } = response
         if (!data) {
-          return reject('Verification failed, please Login again.')
+          return reject(response.message)
         }
         const { name, avatar } = data
 
