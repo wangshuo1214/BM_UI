@@ -29,7 +29,6 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
-    debugger
     const res = response.data
     const code = res.code
     const msg = res.message
@@ -41,11 +40,10 @@ service.interceptors.response.use(
           type: 'warning'
         }
         ).then(() => {
-          store.dispatch('/user/logout').then(() => {
-            location.href = '/index'
+          store.dispatch('user/logout').then(() => {
+            location.href = '/login'
           })
         })
-        return Promise.reject()
       } else if (code === 500) {
         Message({
           message: msg,
