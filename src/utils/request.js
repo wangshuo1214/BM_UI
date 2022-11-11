@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { Message, MessageBox } from 'element-ui'
 import store from '@/store'
-import { getToken } from '@/utils/auth'
+import { getToken, removeToken } from '@/utils/auth'
+import router from '@/router'
 
 // create an axios instance
 const service = axios.create({
@@ -29,6 +30,7 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
+    // debugger
     const res = response.data
     const code = res.code
     const msg = res.message
@@ -40,10 +42,10 @@ service.interceptors.response.use(
           type: 'warning'
         }
         ).then(() => {
-          store.dispatch('user/logout').then(() => {
-            location.href = '/login'
-          })
+          removeToken()
+          router.push(`/login`)
         })
+        return Promise.reject(new Error(msg))
       } else if (code === 500) {
         Message({
           message: msg,
@@ -63,7 +65,6 @@ service.interceptors.response.use(
     }
   },
   error => {
-    debugger
     console.log('err' + error)
     Message({
       message: error.message,
