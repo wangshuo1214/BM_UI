@@ -68,6 +68,25 @@ export const constantRoutes = [
   },
 
   {
+    path: '/dict',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Dipt',
+        component: () => import('@/views/dict/index'),
+        meta: { title: '字典管理', icon: 'form' }
+      },
+      {
+        path: 'type/data/:dictId(\\d+)',
+        component: (resolve) => require(['@/views/dict/data'], resolve),
+        name: 'Data',
+        meta: { title: '字典数据', icon: '' }
+      }
+    ]
+  },
+
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',

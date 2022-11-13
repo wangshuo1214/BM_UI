@@ -75,10 +75,4 @@ service.interceptors.response.use(
   }
 )
 
-// async function Logout() {
-//   await store.dispatch('user/logout')
-//   // await $store.dispatch("user/logout");
-//   // eslint-disable-next-line no-undef
-//   router.push('user/login')
-// }
 export default service
