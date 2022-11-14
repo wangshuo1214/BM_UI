@@ -78,7 +78,8 @@ export const constantRoutes = [
         meta: { title: '字典管理', icon: 'form' }
       },
       {
-        path: 'type/data/:dictId(\\d+)',
+        path: 'type/data/:dictTypeId',
+        hidden: true,
         component: (resolve) => require(['@/views/dict/data'], resolve),
         name: 'Data',
         meta: { title: '字典数据', icon: '' }

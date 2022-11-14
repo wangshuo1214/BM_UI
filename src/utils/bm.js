@@ -98,7 +98,7 @@ export function resetForm(refName) {
 }
 
 // 回显数据字典
-export function selectDictLabel(datas, value) {
+export function selectDictName(datas, value) {
   var actions = []
   Object.keys(datas).some((key) => {
     if (datas[key].dictCode === ('' + value)) {

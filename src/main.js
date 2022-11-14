@@ -16,7 +16,7 @@ import router from './router'
 
 import '@/icons' // icon
 import '@/permission' // permission control
-import { handleTree, parseTime, resetForm, selectDictLabel } from '@/utils/bm'
+import { handleTree, parseTime, resetForm, selectDictName } from '@/utils/bm'
 import Pagination from '@/components/Pagination'
 import '@/utils/dialog'
 import { getDicts } from '@/api/dict'
@@ -39,7 +39,7 @@ Vue.prototype.getDicts = getDicts
 Vue.prototype.handleTree = handleTree
 Vue.prototype.parseTime = parseTime
 Vue.prototype.resetForm = resetForm
-Vue.prototype.selectDictLabel = selectDictLabel
+Vue.prototype.selectDictName = selectDictName
 Vue.prototype.msgSuccess = function(msg) {
   this.$message({ showClose: true, message: msg, type: 'success' })
 }

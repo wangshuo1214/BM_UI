@@ -13,8 +13,12 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="部门状态" clearable size="small">
-          <el-option value="0">0</el-option>
-          <el-option value="1">1</el-option>
+          <el-option
+            v-for="dict in statusOptions"
+            :key="dict.dictCode"
+            :label="dict.dictName"
+            :value="dict.dictCode"
+          />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -34,7 +38,7 @@
     >
       <el-table-column prop="deptName" label="部门名称" width="260" />
       <el-table-column prop="orderNum" label="排序" width="200" />
-      <el-table-column prop="status" label="状态" width="100" />
+      <el-table-column prop="status" label="状态" :formatter="statusFormat" width="100" />
       <el-table-column label="创建时间" align="center" prop="createDate" width="200">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createDate) }}</span>
@@ -103,9 +107,11 @@
           <el-col :span="12">
             <el-form-item label="部门状态">
               <el-radio-group v-model="form.status">
-                <!-- label表示用的是字符串 :label表示用的是数字 -->
-                <el-radio label="1">正常</el-radio>
-                <el-radio label="0">停用</el-radio>
+                <el-radio
+                  v-for="dict in statusOptions"
+                  :key="dict.dictCode"
+                  :label="dict.dictCode"
+                >{{ dict.dictName }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -139,6 +145,8 @@ export default {
         deptName: undefined,
         status: undefined
       },
+      // 状态数据字典
+      statusOptions: [],
       // 是否显示弹出层
       open: false,
       // 弹出层标题
@@ -171,6 +179,9 @@ export default {
   },
   created() {
     this.getList()
+    this.getDicts('sys_normal_disable').then(response => {
+      this.statusOptions = response.data
+    })
   },
   methods: {
     /** 查询部门列表 */
@@ -184,6 +195,10 @@ export default {
     /** 搜索按钮操作 */
     handleQuery() {
       this.getList()
+    },
+    // 字典状态字典翻译
+    statusFormat(row, column) {
+      return this.selectDictName(this.statusOptions, row.status)
     },
     // 表单重置
     reset() {

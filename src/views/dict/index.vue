@@ -67,7 +67,13 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="字典排序" align="center" prop="orderNum" />
       <el-table-column label="字典名称" align="center" prop="dictName" />
-      <el-table-column label="字典类型" align="center" prop="dictType" />
+      <el-table-column label="字典类型" align="center" prop="dictType">
+        <template slot-scope="scope">
+          <router-link :to="'/dict/type/data/' + scope.row.id" class="link-type">
+            <span>{{ scope.row.dictType }}</span>
+          </router-link>
+        </template>
+      </el-table-column>
       <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" />
       <!-- :show-overflow-tooltip=“true” 这个属性可以达成超出一行的文字用省略号替代，并带有移入时tips显示全部内容的需求。 -->
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
@@ -101,14 +107,14 @@
     <!-- 添加或修改参数配置对话框 -->
     <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="字典排序" prop="orderNum">
-          <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
-        </el-form-item>
         <el-form-item label="字典名称" prop="dictName">
           <el-input v-model="form.dictName" placeholder="请输入字典名称" />
         </el-form-item>
         <el-form-item label="字典类型" prop="dictType">
           <el-input v-model="form.dictType" placeholder="请输入字典类型" />
+        </el-form-item>
+        <el-form-item label="字典排序" prop="orderNum">
+          <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
@@ -133,7 +139,7 @@
 
 <script>
 
-import { listType, getType, updateType, addType, delType } from '@/api/dict'
+import { queryType, getType, updateType, addType, delType } from '@/api/dict'
 
 export default {
   name: 'Dict',
@@ -192,7 +198,7 @@ export default {
     /** 查询字典类型列表 */
     getList() {
       this.loading = true
-      listType(this.queryParams).then(response => {
+      queryType(this.queryParams).then(response => {
         this.typeList = response.data.rows
         this.total = response.data.total
         this.loading = false
@@ -231,7 +237,7 @@ export default {
       this.reset()
     },
     statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status)
+      return this.selectDictName(this.statusOptions, row.status)
     },
     // 表单重置
     reset() {
@@ -271,10 +277,8 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      debugger
       const dictIds = row.id !== undefined ? [row.id] : this.ids
-      const dictName = row.dictName
-      this.$confirm('是否确认删除字典名称为"' + dictName + '"的数据项?', '警告', {
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
