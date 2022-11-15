@@ -61,7 +61,12 @@
       <el-table-column label="字典排序" align="center" prop="orderNum" />
       <el-table-column label="字典名称" align="center" prop="dictName" />
       <el-table-column label="字典编码" align="center" prop="dictCode" />
-      <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" />
+      <!-- <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" /> -->
+      <el-table-column label="状态" align="center" prop="status">
+        <template slot-scope="scope">
+          <el-tag effect="plain" :type="(scope.row.status == 1 ? '' : 'danger')">{{ statusFormat(scope.row) }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="创建时间" align="center" prop="createDate" width="180">
         <template slot-scope="scope">
