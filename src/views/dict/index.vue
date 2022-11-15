@@ -19,22 +19,6 @@
           style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="状态" prop="item.status" label-width="40px">
-        <el-select
-          v-model="queryParams.item.status"
-          placeholder="字典状态"
-          clearable
-          size="small"
-          style="width: 180px"
-        >
-          <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictCode"
-            :label="dict.dictName"
-            :value="dict.dictCode"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -74,7 +58,6 @@
           </router-link>
         </template>
       </el-table-column>
-      <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" />
       <!-- :show-overflow-tooltip=“true” 这个属性可以达成超出一行的文字用省略号替代，并带有移入时tips显示全部内容的需求。 -->
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="创建时间" align="center" prop="createDate" width="180" />
@@ -116,15 +99,6 @@
         <el-form-item label="字典排序" prop="orderNum">
           <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio
-              v-for="dict in statusOptions"
-              :key="dict.dictCode"
-              :label="dict.dictCode"
-            >{{ dict.dictName }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
@@ -151,8 +125,6 @@ export default {
       ids: [],
       // 字典表格数据
       typeList: [],
-      // 状态数据字典
-      statusOptions: [],
       // 非多个禁用
       multiple: true,
       // 总条数
@@ -173,8 +145,7 @@ export default {
         },
         item: {
           dictName: undefined,
-          dictType: undefined,
-          status: undefined
+          dictType: undefined
         }
       },
       // 表单校验
@@ -190,9 +161,6 @@ export default {
   },
   created() {
     this.getList()
-    this.getDicts('sys_normal_disable').then(response => {
-      this.statusOptions = response.data
-    })
   },
   methods: {
     /** 查询字典类型列表 */
@@ -236,16 +204,12 @@ export default {
       this.open = false
       this.reset()
     },
-    statusFormat(row, column) {
-      return this.selectDictName(this.statusOptions, row.status)
-    },
     // 表单重置
     reset() {
       this.form = {
         id: undefined,
         dictName: undefined,
         dictType: undefined,
-        status: '1',
         remark: undefined
       }
       this.resetForm('form')

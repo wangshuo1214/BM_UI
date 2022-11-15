@@ -11,16 +11,6 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="状态" prop="status">
-        <el-select v-model="queryParams.status" placeholder="部门状态" clearable size="small">
-          <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictCode"
-            :label="dict.dictName"
-            :value="dict.dictCode"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -38,7 +28,6 @@
     >
       <el-table-column prop="deptName" label="部门名称" width="260" />
       <el-table-column prop="orderNum" label="排序" width="200" />
-      <el-table-column prop="status" label="状态" :formatter="statusFormat" width="100" />
       <el-table-column label="创建时间" align="center" prop="createDate" width="200">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.createDate) }}</span>
@@ -103,19 +92,6 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col :span="12">
-            <el-form-item label="部门状态">
-              <el-radio-group v-model="form.status">
-                <el-radio
-                  v-for="dict in statusOptions"
-                  :key="dict.dictCode"
-                  :label="dict.dictCode"
-                >{{ dict.dictName }}</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -142,18 +118,14 @@ export default {
       deptList: [],
       // 查询参数
       queryParams: {
-        deptName: undefined,
-        status: undefined
+        deptName: undefined
       },
-      // 状态数据字典
-      statusOptions: [],
       // 是否显示弹出层
       open: false,
       // 弹出层标题
       title: '',
       // 表单参数
       form: {
-        status: '1'
       },
       // 部门树选项
       deptOptions: [],
@@ -179,9 +151,6 @@ export default {
   },
   created() {
     this.getList()
-    this.getDicts('sys_normal_disable').then(response => {
-      this.statusOptions = response.data
-    })
   },
   methods: {
     /** 查询部门列表 */
@@ -196,10 +165,6 @@ export default {
     handleQuery() {
       this.getList()
     },
-    // 字典状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictName(this.statusOptions, row.status)
-    },
     // 表单重置
     reset() {
       this.form = {
@@ -209,8 +174,7 @@ export default {
         orderNum: undefined,
         leader: undefined,
         phone: undefined,
-        email: undefined,
-        status: '1'
+        email: undefined
       }
       this.resetForm('form')
     },

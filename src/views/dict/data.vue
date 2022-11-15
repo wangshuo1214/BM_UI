@@ -14,20 +14,10 @@
       <el-form-item label="字典名称" prop="item.dictName">
         <el-input
           v-model="queryParams.item.dictName"
-          placeholder="请输入字典标签"
+          placeholder="请输入字典名称"
           clearable
           size="small"
         />
-      </el-form-item>
-      <el-form-item label="状态" prop="item.status">
-        <el-select v-model="queryParams.item.status" placeholder="数据状态" clearable size="small">
-          <el-option
-            v-for="dict in statusOptions"
-            :key="dict.dictCode"
-            :label="dict.dictName"
-            :value="dict.dictCode"
-          />
-        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -61,12 +51,6 @@
       <el-table-column label="字典排序" align="center" prop="orderNum" />
       <el-table-column label="字典名称" align="center" prop="dictName" />
       <el-table-column label="字典编码" align="center" prop="dictCode" />
-      <!-- <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" /> -->
-      <el-table-column label="状态" align="center" prop="status">
-        <template slot-scope="scope">
-          <el-tag effect="plain" :type="(scope.row.status == 1 ? '' : 'danger')">{{ statusFormat(scope.row) }}</el-tag>
-        </template>
-      </el-table-column>
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="创建时间" align="center" prop="createDate" width="180">
         <template slot-scope="scope">
@@ -117,15 +101,6 @@
         <el-form-item label="显示排序" prop="orderNum">
           <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio
-              v-for="dict in statusOptions"
-              :key="dict.dictCode"
-              :label="dict.dictCode"
-            >{{ dict.dictName }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
         </el-form-item>
@@ -157,8 +132,6 @@ export default {
       multiple: true,
       // 类型数据字典
       typeOptions: [],
-      // 状态数据字典
-      statusOptions: [],
       // 字典表格数据
       dataList: [],
       // 默认字典类型
@@ -174,8 +147,7 @@ export default {
         item: {
           dictTypeId: undefined,
           dictCode: undefined,
-          dictName: undefined,
-          status: undefined
+          dictName: undefined
         }
       },
       // 表单参数
@@ -200,9 +172,6 @@ export default {
     const dictTypeId = this.$route.params && this.$route.params.dictTypeId
     this.getType(dictTypeId)
     this.getTypeList()
-    this.getDicts('sys_normal_disable').then(response => {
-      this.statusOptions = response.data
-    })
   },
   methods: {
     /** 搜索按钮操作 */
@@ -235,10 +204,6 @@ export default {
       this.queryParams.item.dictTypeId = this.defaultDictTypeId
       this.handleQuery()
     },
-    // 数据状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictName(this.statusOptions, row.status)
-    },
     /** 查询字典数据列表 */
     getList() {
       this.loading = true
@@ -256,14 +221,13 @@ export default {
         dictName: undefined,
         dictCode: undefined,
         orderNum: 0,
-        status: '1',
         remark: undefined
       }
       this.resetForm('form')
     },
     // 通过字典类型ID获取字典类型名称
     getTypeNameByTypeId(dictTypeId) {
-      if (this.statusOptions) {
+      if (this.typeOptions) {
         for (const dictType of this.typeOptions) {
           if (dictType.id === dictTypeId) { return dictType.dictName }
         }
