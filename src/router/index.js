@@ -68,6 +68,19 @@ export const constantRoutes = [
   },
 
   {
+    path: '/menu',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Menu',
+        component: () => import('@/views/menu/index'),
+        meta: { title: '菜单管理', icon: 'form' }
+      }
+    ]
+  },
+
+  {
     path: '/dict',
     component: Layout,
     children: [
