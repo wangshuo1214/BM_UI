@@ -50,12 +50,19 @@
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-        <template>
+        <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
             icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
           >修改</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-plus"
+            @click="handleAdd(scope.row)"
+          >新增</el-button>
           <el-button
             size="mini"
             type="text"
@@ -66,7 +73,7 @@
     </el-table>
 
     <!-- 添加或修改菜单对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="680px" append-to-body>
+    <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="680px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="24">
@@ -104,7 +111,7 @@
                     slot="prefix"
                     :icon-class="form.icon"
                     class="el-input__icon"
-                    style="height: 32px;width: 16px;"
+                    style="height: 40px;width: 16px;"
                   />
                   <i v-else slot="prefix" class="el-icon-search el-input__icon" />
                 </el-input>
@@ -213,7 +220,7 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -223,7 +230,7 @@
 
 <script>
 
-import { listMenu } from '@/api/menu'
+import { listMenu, updateMenu, addMenu, getMenu } from '@/api/menu'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import IconSelect from '@/components/IconSelect'
@@ -342,6 +349,52 @@ export default {
       }
       this.open = true
       this.title = '添加菜单'
+    },
+    /** 提交按钮 */
+    submitForm: function() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          if (this.form.menuId !== undefined) {
+            this.initUpdateData(this.form.menuType)
+            updateMenu(this.form).then(response => {
+              this.msgSuccess('修改成功')
+              this.open = false
+              this.getList()
+            })
+          } else {
+            addMenu(this.form).then(response => {
+              this.msgSuccess('新增成功')
+              this.open = false
+              this.getList()
+            })
+          }
+        }
+      })
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset()
+      this.getTreeselect()
+      getMenu(row.menuId).then(response => {
+        this.form = response.data
+        this.open = true
+        this.title = '修改菜单'
+      })
+    },
+    initUpdateData(menuType) {
+      if (menuType === 'C') {
+        this.form.component = ''
+        this.form.perms = ''
+        this.form.query = ''
+        this.form.isCache = 1
+      } else if (menuType === 'B') {
+        this.form.icon = ''
+        this.form.isFrame = 0
+        this.form.path = ''
+        this.form.component = ''
+        this.form.query = ''
+        this.form.isCache = 1
+      }
     },
     // 取消按钮
     cancel() {
