@@ -1,6 +1,5 @@
 'use strict'
 const path = require('path')
-const defaultSettings = require('./src/settings.js')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -40,8 +39,8 @@ module.exports = {
       // detail: https://cli.vuejs.org/config/#devserver-proxy
       [process.env.VUE_APP_BASE_API]: {
         target: `http://localhost:8066/api/bm`,
-        changeOrigin: true,//代理开启标志
-        //会将 /dev-api 替换为 '',也就是 /dev-api 会移除
+        changeOrigin: true, // 代理开启标志
+        // 会将 /dev-api 替换为 '',也就是 /dev-api 会移除
         // 如 /dev-api/db.json  代理到 https://localhost:9258/db.json
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
@@ -78,12 +77,12 @@ module.exports = {
     // set svg-sprite-loader
     config.module
       .rule('svg')
-      .exclude.add(resolve('src/icons'))
+      .exclude.add(resolve('src/assets/icons'))
       .end()
     config.module
       .rule('icons')
       .test(/\.svg$/)
-      .include.add(resolve('src/icons'))
+      .include.add(resolve('src/assets/icons'))
       .end()
       .use('svg-sprite-loader')
       .loader('svg-sprite-loader')
