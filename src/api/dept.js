@@ -24,26 +24,26 @@ export function addDept(data) {
   })
 }
 
-export function getDept(deptId) {
+export function getDept(bmDeptId) {
   return request({
     url: '/dept/get',
     method: 'get',
-    params: { deptId }
+    params: { bmDeptId }
   })
 }
 
-export function listDeptExcludeChild(deptId) {
+export function listDeptExcludeChild(bmDeptId) {
   return request({
     url: '/dept/exclude',
     method: 'post',
-    params: { 'deptId': deptId }
+    params: { 'bmDeptId': bmDeptId }
   })
 }
 
-export function delDept(deptId) {
+export function delDept(bmDeptId) {
   return request({
     url: '/dept/delete',
     method: 'post',
-    params: { 'deptId': deptId }
+    params: { 'bmDeptId': bmDeptId }
   })
 }

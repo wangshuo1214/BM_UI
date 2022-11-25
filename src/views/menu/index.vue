@@ -16,7 +16,7 @@
     </el-form>
 
     <!-- gutter 用来指定每一栏之间的间隔 -->
-    <el-row class="mb8">
+    <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
           type="primary"
@@ -26,9 +26,19 @@
           @click="handleAdd"
         >新增</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-sort"
+          size="mini"
+          @click="toggleExpandAll"
+        >展开/折叠</el-button>
+      </el-col>
     </el-row>
 
     <el-table
+      v-if="refreshTable"
       v-loading="loading"
       :data="menuList"
       row-key="menuId"
@@ -67,6 +77,7 @@
             size="mini"
             type="text"
             icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -230,7 +241,7 @@
 
 <script>
 
-import { listMenu, updateMenu, addMenu, getMenu } from '@/api/menu'
+import { listMenu, updateMenu, addMenu, getMenu, listMenuExcludeChild, delMenu } from '@/api/menu'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import IconSelect from '@/components/IconSelect'
@@ -251,6 +262,8 @@ export default {
       },
       // 是否展开，默认全部折叠
       isExpandAll: false,
+      // 重新渲染表格状态
+      refreshTable: true,
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -301,9 +314,17 @@ export default {
       }
       this.resetForm('form')
     },
+    /** 展开/折叠操作 */
+    toggleExpandAll() {
+      this.refreshTable = false
+      this.isExpandAll = !this.isExpandAll
+      this.$nextTick(() => {
+        this.refreshTable = true
+      })
+    },
     /** 查询菜单下拉树结构 */
-    getTreeselect() {
-      listMenu({}).then(response => {
+    getTreeselect(bmMenuId) {
+      listMenuExcludeChild(bmMenuId).then(response => {
         this.menuOptions = []
         const menu = { menuId: 0, menuName: '主类目', children: [] }
         menu.children = this.handleTree(response.data, 'menuId')
@@ -374,7 +395,7 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      this.getTreeselect()
+      this.getTreeselect(row.menuId)
       getMenu(row.menuId).then(response => {
         this.form = response.data
         this.open = true
@@ -395,6 +416,19 @@ export default {
         this.form.query = ''
         this.form.isCache = 1
       }
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      this.$confirm('是否确认删除名称为"' + row.menuName + '"的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delMenu(row.menuId)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      }).catch(() => {})
     },
     // 取消按钮
     cancel() {

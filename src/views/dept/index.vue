@@ -17,13 +17,33 @@
       </el-form-item>
     </el-form>
     <!--plain:是否朴素按钮-->
-    <el-button type="primary" plain icon="el-icon-plus" size="small" @click="handleAdd">新增</el-button>
-
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          plain
+          icon="el-icon-plus"
+          size="small"
+          @click="handleAdd"
+        >新增</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-sort"
+          size="mini"
+          @click="toggleExpandAll"
+        >展开/折叠</el-button>
+      </el-col>
+    </el-row>
     <!--tree-props:渲染嵌套数据的配置选项-->
     <el-table
+      v-if="refreshTable"
       v-loading="loading"
       :data="deptList"
       row-key="deptId"
+      :default-expand-all="isExpandAll"
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
       <el-table-column prop="deptName" label="部门名称" width="260" />
@@ -61,7 +81,7 @@
     <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="600px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
-          <el-col v-if="form.parentId !== 0" :span="24">
+          <el-col :span="24">
             <el-form-item label="上级部门" prop="parentId">
               <!-- normalizer属性，是用于将options的值，转换为符合vue-treeselect要求的数据格式 -->
               <treeselect v-model="form.parentId" :options="deptOptions" :normalizer="normalizer" placeholder="选择上级部门" />
@@ -112,10 +132,17 @@ export default {
   components: { Treeselect },
   data() {
     return {
-    // 遮罩层
+      // 遮罩层
       loading: true,
       // 表格树数据
       deptList: [],
+      // 总部门
+      firstDept: {
+        deptId: '0',
+        deptName: '主类目',
+        orderNum: 0,
+        children: []
+      },
       // 查询参数
       queryParams: {
         deptName: undefined
@@ -124,6 +151,10 @@ export default {
       open: false,
       // 弹出层标题
       title: '',
+      // 是否展开，默认全部折叠
+      isExpandAll: false,
+      // 重新渲染表格状态
+      refreshTable: true,
       // 表单参数
       form: {
       },
@@ -157,13 +188,24 @@ export default {
     getList() {
       this.loading = true
       listDept(this.queryParams).then(response => {
-        this.deptList = this.handleTree(response.data, 'deptId')
+        const dept = this.firstDept
+        dept.children = this.handleTree(response.data, 'deptId')
+        this.deptList.push(dept)
+        // this.deptList = this.handleTree(response.data, 'deptId')
         this.loading = false
       })
     },
     /** 搜索按钮操作 */
     handleQuery() {
       this.getList()
+    },
+    /** 展开/折叠操作 */
+    toggleExpandAll() {
+      this.refreshTable = false
+      this.isExpandAll = !this.isExpandAll
+      this.$nextTick(() => {
+        this.refreshTable = true
+      })
     },
     // 表单重置
     reset() {
@@ -178,19 +220,26 @@ export default {
       }
       this.resetForm('form')
     },
+    /** 查询菜单下拉树结构 */
+    getTreeselect(bmDeptId) {
+      listDeptExcludeChild(bmDeptId).then(response => {
+        this.deptOptions = []
+        const dept = this.firstDept
+        dept.children = this.handleTree(response.data, 'deptId')
+        this.deptOptions.push(dept)
+      })
+    },
     /** 新增按钮操作 */
     handleAdd(row) {
       this.reset()
-      if (row !== undefined) {
+      this.getTreeselect()
+      if (row != null && row.deptId) {
         this.form.parentId = row.deptId
+      } else {
+        this.form.parentId = 0
       }
       this.open = true
       this.title = '添加部门'
-      // eslint-disable-next-line
-      listDept({}).then(response => {
-        // eslint-disable-next-line
-	      this.deptOptions = this.handleTree(response.data, 'deptId')
-      })
     },
     /** 重置按钮操作 */
     resetQuery() {

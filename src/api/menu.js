@@ -8,6 +8,14 @@ export function listMenu(data) {
   })
 }
 
+export function listMenuExcludeChild(bmMenuId) {
+  return request({
+    url: '/menu/exclude',
+    method: 'post',
+    params: { 'bmMenuId': bmMenuId }
+  })
+}
+
 export function updateMenu(data) {
   return request({
     url: '/menu/update',
@@ -29,5 +37,13 @@ export function getMenu(bmMenuId) {
     url: '/menu/get',
     method: 'get',
     params: { bmMenuId }
+  })
+}
+
+export function delMenu(bmMenuId) {
+  return request({
+    url: '/menu/delete',
+    method: 'post',
+    params: { 'bmMenuId': bmMenuId }
   })
 }
