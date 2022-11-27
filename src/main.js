@@ -19,7 +19,7 @@ import '@/permission' // permission control
 import { handleTree, parseTime, resetForm, selectDictName } from '@/utils/bm'
 import Pagination from '@/components/Pagination'
 import '@/utils/dialog'
-import { getDicts } from '@/api/dict'
+import { getDicts, getSoleDict } from '@/api/dict'
 
 /**
  * If you don't want to use mock-server
@@ -36,6 +36,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // 全局方法挂载
 Vue.prototype.getDicts = getDicts
+Vue.prototype.getSoleDict = getSoleDict
 Vue.prototype.handleTree = handleTree
 Vue.prototype.parseTime = parseTime
 Vue.prototype.resetForm = resetForm

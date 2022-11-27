@@ -68,6 +68,7 @@
             @click="handleAdd(scope.row)"
           >新增</el-button>
           <el-button
+            v-if="scope.row.parentId !== '0'"
             size="mini"
             type="text"
             icon="el-icon-delete"
@@ -136,13 +137,6 @@ export default {
       loading: true,
       // 表格树数据
       deptList: [],
-      // 总部门
-      firstDept: {
-        deptId: '0',
-        deptName: '主类目',
-        orderNum: 0,
-        children: []
-      },
       // 查询参数
       queryParams: {
         deptName: undefined
@@ -152,7 +146,7 @@ export default {
       // 弹出层标题
       title: '',
       // 是否展开，默认全部折叠
-      isExpandAll: false,
+      isExpandAll: true,
       // 重新渲染表格状态
       refreshTable: true,
       // 表单参数
@@ -188,10 +182,7 @@ export default {
     getList() {
       this.loading = true
       listDept(this.queryParams).then(response => {
-        const dept = this.firstDept
-        dept.children = this.handleTree(response.data, 'deptId')
-        this.deptList.push(dept)
-        // this.deptList = this.handleTree(response.data, 'deptId')
+        this.deptList = this.handleTree(response.data, 'deptId')
         this.loading = false
       })
     },
@@ -223,23 +214,20 @@ export default {
     /** 查询菜单下拉树结构 */
     getTreeselect(bmDeptId) {
       listDeptExcludeChild(bmDeptId).then(response => {
-        this.deptOptions = []
-        const dept = this.firstDept
-        dept.children = this.handleTree(response.data, 'deptId')
-        this.deptOptions.push(dept)
+        this.deptOptions.push(this.handleTree(response.data, 'deptId'))
       })
     },
     /** 新增按钮操作 */
     handleAdd(row) {
       this.reset()
-      this.getTreeselect()
-      if (row != null && row.deptId) {
+      if (row !== undefined) {
         this.form.parentId = row.deptId
-      } else {
-        this.form.parentId = 0
       }
       this.open = true
       this.title = '添加部门'
+      listDept({}).then(response => {
+        this.deptOptions = this.handleTree(response.data, 'deptId')
+      })
     },
     /** 重置按钮操作 */
     resetQuery() {

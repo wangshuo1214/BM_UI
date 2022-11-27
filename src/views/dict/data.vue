@@ -89,7 +89,7 @@
         <el-form-item v-show="false" label="字典类型ID">
           <el-input v-model="form.dictTypeId" :disabled="true" />
         </el-form-item>
-        <el-form-item label="字典类型">
+        <el-form-item label="字典类型" prop="dictType">
           <el-input v-model="form.dictType" :disabled="true" />
         </el-form-item>
         <el-form-item label="字典名称" prop="dictName">
@@ -154,14 +154,17 @@ export default {
       form: {},
       // 表单校验
       rules: {
-        dictLabel: [
-          { required: true, message: '数据标签不能为空', trigger: 'blur' }
+        dictType: [
+          { required: true, message: '字典类型不能为空', trigger: 'blur' }
         ],
-        dictValue: [
-          { required: true, message: '数据键值不能为空', trigger: 'blur' }
+        dictName: [
+          { required: true, message: '字典名称不能为空', trigger: 'blur' }
         ],
-        dictSort: [
-          { required: true, message: '数据顺序不能为空', trigger: 'blur' }
+        dictCode: [
+          { required: true, message: '字典编码不能为空', trigger: 'blur' }
+        ],
+        orderNum: [
+          { required: true, message: '字典顺序不能为空', trigger: 'blur' }
         ]
       },
       // 总条数

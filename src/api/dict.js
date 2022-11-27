@@ -95,3 +95,12 @@ export function delData(data) {
     data
   })
 }
+
+// 根据字典类型和字典名称获得唯一的字典
+export function getSoleDict(bmDictType, bmDictCode) {
+  return request({
+    url: '/dict/data/sole',
+    method: 'get',
+    params: { bmDictType, bmDictCode }
+  })
+}
