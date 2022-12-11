@@ -1,8 +1,9 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" size="small" :inline="true">
+    <el-form ref="queryForm" :model="queryParams" size="small" :inline="true">
       <el-form-item label="角色名称" prop="roleName">
         <el-input
+          v-model="queryParams.item.roleName"
           placeholder="请输入角色名称"
           clearable
           style="width: 240px"
@@ -10,13 +11,14 @@
       </el-form-item>
       <el-form-item label="权限字符" prop="roleKey">
         <el-input
+          v-model="queryParams.item.roleKey"
           placeholder="请输入权限字符"
           clearable
           style="width: 240px"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini">重置</el-button>
       </el-form-item>
     </el-form>
@@ -40,15 +42,14 @@
       </el-col>
     </el-row>
 
-    <el-table>
+    <el-table v-loading="loading" :data="roleList">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="角色编号" prop="roleId" width="120" />
+      <el-table-column label="显示顺序" prop="orderNum" width="100" />
       <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
       <el-table-column label="权限字符" prop="roleKey" :show-overflow-tooltip="true" width="150" />
-      <el-table-column label="显示顺序" prop="roleSort" width="100" />
-      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+      <el-table-column label="创建时间" align="center" prop="createDate" width="180">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.createTime) }}</span>
+          <span>{{ parseTime(scope.row.createDate) }}</span>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -84,6 +85,52 @@
 
 <script>
 
+import { listRole } from '@/api/role'
+
 export default {
+  data() {
+    return {
+      // 遮罩层
+      loading: true,
+      // 角色表格数据
+      roleList: [],
+      // 总条数
+      total: 0,
+      // 查询参数
+      queryParams: {
+        page: {
+          pageNum: 1,
+          pageSize: 10,
+          orderByColumn: 'orderNum',
+          orderFlag: 'asc'
+        },
+        item: {
+          roleName: undefined,
+          roleKey: undefined
+        }
+      }
+    }
+  },
+  created() {
+    this.getList()
+  },
+  methods: {
+    /** 查询角色列表 */
+    getList() {
+      this.loading = true
+      listRole(this.queryParams).then(
+        response => {
+          this.roleList = response.data.rows
+          this.total = response.total
+          this.loading = false
+        }
+      )
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.page.pageNum = 1
+      this.getList()
+    }
+  }
 }
 </script>
