@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :model="queryParams" size="small" :inline="true">
-      <el-form-item label="角色名称" prop="roleName">
+      <el-form-item label="角色名称" prop="item.roleName">
         <el-input
           v-model="queryParams.item.roleName"
           placeholder="请输入角色名称"
@@ -9,7 +9,7 @@
           style="width: 240px"
         />
       </el-form-item>
-      <el-form-item label="权限字符" prop="roleKey">
+      <el-form-item label="权限字符" prop="item.roleKey">
         <el-input
           v-model="queryParams.item.roleKey"
           placeholder="请输入权限字符"
@@ -19,7 +19,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini">重置</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
@@ -30,6 +30,7 @@
           plain
           icon="el-icon-plus"
           size="mini"
+          @click="handleAdd"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -86,6 +87,7 @@
 <script>
 
 import { listRole } from '@/api/role'
+import { treeselect as menuTreeselect } from '@/api/menu'
 
 export default {
   data() {
@@ -94,8 +96,20 @@ export default {
       loading: true,
       // 角色表格数据
       roleList: [],
+      // 弹出层标题
+      title: '',
+      // 是否显示弹出层
+      open: false,
       // 总条数
       total: 0,
+      menuExpand: false,
+      menuNodeAll: false,
+      deptExpand: true,
+      deptNodeAll: false,
+      // 菜单列表
+      menuOptions: [],
+      // 表单参数
+      form: {},
       // 查询参数
       queryParams: {
         page: {
@@ -130,6 +144,44 @@ export default {
     handleQuery() {
       this.queryParams.page.pageNum = 1
       this.getList()
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm('queryForm')
+      this.handleQuery()
+    },
+    // 表单重置
+    reset() {
+      if (this.$refs.menu !== undefined) {
+        this.$refs.menu.setCheckedKeys([])
+      }
+      this.menuExpand = false
+      this.menuNodeAll = false
+      this.deptExpand = true
+      this.deptNodeAll = false
+      this.form = {
+        roleId: undefined,
+        roleName: undefined,
+        roleKey: undefined,
+        orderNum: 0,
+        menuIds: [],
+        menuCheckStrictly: true,
+        remark: undefined
+      }
+      this.resetForm('form')
+    },
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.reset()
+      this.getMenuTreeselect()
+      this.open = true
+      this.title = '添加角色'
+    },
+    /** 查询菜单树结构 */
+    getMenuTreeselect() {
+      menuTreeselect().then(response => {
+        this.menuOptions = response.data
+      })
     }
   }
 }
