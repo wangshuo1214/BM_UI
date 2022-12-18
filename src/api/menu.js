@@ -55,3 +55,12 @@ export function treeselect() {
     method: 'get'
   })
 }
+
+// 根据角色ID查询菜单下拉树结构
+export function roleMenuTreeselect(bmRoleId) {
+  return request({
+    url: '/menu/roleMenuTreeselect',
+    method: 'get',
+    params: { 'bmRoleId': bmRoleId }
+  })
+}
