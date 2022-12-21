@@ -236,7 +236,7 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      const roleId = row.roleId || this.ids
+      const roleId = row.roleId
       const roleMenu = this.getRoleMenuTreeselect(roleId)
       getRole(roleId).then(response => {
         this.form = response.data
@@ -267,14 +267,14 @@ export default {
           if (this.form.roleId !== undefined) {
             this.form.menuIds = this.getMenuAllCheckedKeys()
             updateRole(this.form).then(response => {
-              this.$modal.msgSuccess('修改成功')
+              this.msgSuccess('修改成功')
               this.open = false
               this.getList()
             })
           } else {
             this.form.menuIds = this.getMenuAllCheckedKeys()
             addRole(this.form).then(response => {
-              this.$modal.msgSuccess('新增成功')
+              this.msgSuccess('新增成功')
               this.open = false
               this.getList()
             })
