@@ -22,3 +22,57 @@ export function logout() {
     method: 'post'
   })
 }
+
+export function listUser(data) {
+  return request({
+    url: '/user/query',
+    method: 'post',
+    data
+  })
+}
+
+export function updateUser(data) {
+  return request({
+    url: '/user/update',
+    method: 'post',
+    data
+  })
+}
+
+export function addUser(data) {
+  return request({
+    url: '/user/add',
+    method: 'post',
+    data
+  })
+}
+
+export function getUser(bmUserId) {
+  return request({
+    url: '/user/get',
+    method: 'get',
+    params: { bmUserId }
+  })
+}
+
+export function delUser(bmUserId) {
+  return request({
+    url: '/user/delete',
+    method: 'post',
+    params: { 'bmUserId': bmUserId }
+  })
+}
+
+// 用户状态修改
+export function changeUserStatus(userId, status) {
+  const data = {
+    userId,
+    status
+  }
+  return request({
+    url: '/user/changeStatus',
+    method: 'post',
+    data: data
+  })
+}
+

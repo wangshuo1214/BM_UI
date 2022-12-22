@@ -32,3 +32,11 @@ export function getRole(bmRoleId) {
   })
 }
 
+export function delRole(data) {
+  return request({
+    url: '/role/delete',
+    method: 'post',
+    data
+  })
+}
+

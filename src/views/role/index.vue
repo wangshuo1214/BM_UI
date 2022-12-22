@@ -39,11 +39,12 @@
           plain
           icon="el-icon-delete"
           size="mini"
+          @click="handleDelete"
         >删除</el-button>
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="roleList">
+    <el-table v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="显示顺序" prop="orderNum" width="100" />
       <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
@@ -65,8 +66,15 @@
             size="mini"
             type="text"
             icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
           >删除</el-button>
-          <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-user"
+            @click="handleAuthUser(scope.row)"
+          >分配用户</el-button>
+          <!-- <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)">
             <el-button size="mini" type="text" icon="el-icon-d-arrow-right">更多</el-button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
@@ -78,7 +86,7 @@
                 icon="el-icon-user"
               >分配用户</el-dropdown-item>
             </el-dropdown-menu>
-          </el-dropdown>
+          </el-dropdown> -->
         </template>
       </el-table-column>
     </el-table>
@@ -130,7 +138,7 @@
 
 <script>
 
-import { listRole, addRole, updateRole, getRole } from '@/api/role'
+import { listRole, addRole, updateRole, getRole, delRole } from '@/api/role'
 import { treeselect as menuTreeselect, roleMenuTreeselect } from '@/api/menu'
 
 export default {
@@ -138,6 +146,8 @@ export default {
     return {
       // 遮罩层
       loading: true,
+      // 选中数组
+      ids: [],
       // 角色表格数据
       roleList: [],
       // 弹出层标题
@@ -187,6 +197,10 @@ export default {
     this.getList()
   },
   methods: {
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.roleId)
+    },
     /** 查询角色列表 */
     getList() {
       this.loading = true
@@ -254,6 +268,20 @@ export default {
         this.title = '修改角色'
       })
     },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const roleIds = row.roleId !== undefined ? [row.roleId] : this.ids
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delRole(roleIds)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      })
+    },
     /** 查询菜单树结构 */
     getMenuTreeselect() {
       menuTreeselect().then(response => {
@@ -313,6 +341,10 @@ export default {
     // 树权限（全选/全不选）
     handleCheckedTreeNodeAll(value) {
       this.$refs.menu.setCheckedNodes(value ? this.menuOptions : [])
+    },
+    handleAuthUser(row) {
+      const roleId = row.roleId
+      this.$router.push('/role-auth/user/' + roleId)
     }
   }
 }
