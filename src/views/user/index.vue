@@ -15,8 +15,12 @@
         <div class="head-container">
           <el-tree
             ref="tree"
+            node-key="id"
+            :data="deptOptions"
+            :props="defaultProps"
             :expand-on-click-node="false"
             default-expand-all
+            highlight-current
           />
         </div>
       </el-col>
@@ -158,14 +162,32 @@
 </template>
 
 <script>
+import { deptTreeSelect } from '@/api/dept'
 
 export default {
   name: 'User',
   components: { },
   data() {
     return {
+      // 部门树选项
+      deptOptions: undefined,
+      defaultProps: {
+        children: 'children',
+        label: 'name'
+      }
     }
   },
-  methods: {}
+  created() {
+    this.getDeptTree()
+  },
+  methods: {
+    /** 查询部门下拉树结构 */
+    getDeptTree() {
+      deptTreeSelect().then(response => {
+        debugger
+        this.deptOptions = response.data
+      })
+    }
+  }
 }
 </script>

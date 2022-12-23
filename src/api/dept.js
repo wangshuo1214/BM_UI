@@ -47,3 +47,10 @@ export function delDept(bmDeptId) {
     params: { 'bmDeptId': bmDeptId }
   })
 }
+
+export function deptTreeSelect() {
+  return request({
+    url: '/dept/deptTree',
+    method: 'get'
+  })
+}
