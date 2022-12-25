@@ -5,6 +5,7 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <el-input
+            v-model="deptName"
             placeholder="请输入部门名称"
             clearable
             size="small"
@@ -19,26 +20,53 @@
             :data="deptOptions"
             :props="defaultProps"
             :expand-on-click-node="false"
+            :filter-node-method="filterNode"
             default-expand-all
             highlight-current
+            @node-click="handleNodeClick"
           />
         </div>
       </el-col>
       <!--用户数据-->
       <el-col :span="20" :xs="24">
-        <el-form ref="queryForm" :inline="true" label-width="68px">
-          <el-form-item label="用户名称" prop="userName">
+        <el-form ref="queryForm" :model="queryParams" :inline="true" label-width="68px">
+          <el-form-item label="登录名" prop="item.userName">
             <el-input
-              placeholder="请输入用户名称"
+              v-model="queryParams.item.userName"
+              placeholder="请输入登录名"
               clearable
               size="small"
               style="width: 240px"
             />
           </el-form-item>
-          <el-form-item label="状态" prop="status" />
+          <el-form-item label="真实姓名" prop="item.realName">
+            <el-input
+              v-model="queryParams.item.realName"
+              placeholder="请输入真实姓名"
+              clearable
+              size="small"
+              style="width: 240px"
+            />
+          </el-form-item>
+          <el-form-item label="状态" prop="item.status">
+            <el-select
+              v-model="queryParams.item.status"
+              placeholder="用户状态"
+              clearable
+              size="small"
+              style="width: 240px"
+            >
+              <el-option
+                v-for="dict in statusOptions"
+                :key="dict.dictCode"
+                :label="dict.dictName"
+                :value="dict.dictCode"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item>
-            <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
-            <el-button icon="el-icon-refresh" size="mini">重置</el-button>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
 
@@ -61,24 +89,23 @@
           </el-col>
         </el-row>
 
-        <el-table>
+        <el-table v-loading="loading" :data="userList">
           <el-table-column type="selection" width="50" align="center" />
-          <el-table-column key="userId" label="用户编号" align="center" prop="userId" />
-          <el-table-column key="userName" label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />
-          <el-table-column key="nickName" label="用户昵称" align="center" prop="nickName" :show-overflow-tooltip="true" />
-          <el-table-column key="deptName" label="部门" align="center" prop="dept.deptName" :show-overflow-tooltip="true" />
-          <el-table-column key="phonenumber" label="手机号码" align="center" prop="phonenumber" width="120" />
+          <el-table-column key="userName" label="登录名" align="center" prop="userName" :show-overflow-tooltip="true" />
+          <el-table-column key="nickName" label="真实姓名" align="center" prop="realName" :show-overflow-tooltip="true" />
+          <el-table-column key="deptName" label="部门" align="center" prop="deptName" :show-overflow-tooltip="true" />
           <el-table-column key="status" label="状态" align="center">
-            <template>
+            <template slot-scope="scope">
               <el-switch
-                active-value="0"
-                inactive-value="1"
+                v-model="scope.row.status"
+                active-value="1"
+                inactive-value="0"
               />
             </template>
           </el-table-column>
-          <el-table-column label="创建时间" align="center" prop="createTime" width="160">
-            <template>
-              <span>{{ }}</span>
+          <el-table-column label="修改时间" align="center" prop="updateDate" width="160">
+            <template slot-scope="scope">
+              <span>{{ parseTime(scope.row.updateDate) }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -162,6 +189,7 @@
 </template>
 
 <script>
+import { listUser } from '@/api/user'
 import { deptTreeSelect } from '@/api/dept'
 
 export default {
@@ -169,24 +197,85 @@ export default {
   components: { },
   data() {
     return {
+      // 遮罩层
+      loading: true,
+      // 用户表格数据
+      userList: null,
+      // 部门名称
+      deptName: undefined,
+      // 状态数据字典
+      statusOptions: [],
       // 部门树选项
       deptOptions: undefined,
       defaultProps: {
         children: 'children',
         label: 'name'
+      },
+      // 查询条件
+      queryParams: {
+        page: {
+          pageNum: 1,
+          pageSize: 10,
+          orderByColumn: 'updateDate',
+          orderFlag: 'desc'
+        },
+        item: {
+          userName: undefined,
+          realName: undefined,
+          status: undefined
+        }
       }
     }
   },
+  watch: {
+    // 根据名称筛选部门树
+    deptName(val) {
+      this.$refs.tree.filter(val)
+    }
+  },
   created() {
+    this.getList()
     this.getDeptTree()
+    this.getDicts('sys_normal_disable').then(response => {
+      this.statusOptions = response.data
+    })
   },
   methods: {
+    /** 查询用户列表 */
+    getList() {
+      this.loading = true
+      listUser(this.queryParams).then(response => {
+        this.userList = response.data.rows
+        this.total = response.data.total
+        this.loading = false
+      }
+      )
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.page.pageNum = 1
+      this.getList()
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm('queryForm')
+      this.handleQuery()
+    },
+    // 节点单击事件
+    handleNodeClick(data) {
+      this.queryParams.item.deptId = data.id
+      this.getList()
+    },
     /** 查询部门下拉树结构 */
     getDeptTree() {
       deptTreeSelect().then(response => {
-        debugger
         this.deptOptions = response.data
       })
+    },
+    // 筛选节点
+    filterNode(value, data) {
+      if (!value) return true
+      return data.name.indexOf(value) !== -1
     }
   }
 }
