@@ -73,11 +73,12 @@
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
             <el-button
-              type="success"
+              type="primary"
               plain
-              icon="el-icon-edit"
+              icon="el-icon-plus"
               size="mini"
-            >修改</el-button>
+              @click="handleAdd"
+            >新增</el-button>
           </el-col>
           <el-col :span="1.5">
             <el-button
@@ -137,37 +138,41 @@
     </el-row>
 
     <!-- 添加或修改参数配置对话框 -->
-    <el-dialog width="600px" append-to-body>
-      <el-form ref="form" label-width="80px">
+    <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="600px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="登录名" prop="nickName">
-              <el-input placeholder="请输入用户昵称" />
+            <el-form-item label="真实姓名" prop="realName">
+              <el-input v-model="form.realName" placeholder="请输入用户名称" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="归属部门" prop="deptId">
-              <treeselect :show-count="true" placeholder="请选择归属部门" />
+              <treeselect v-model="form.deptId" :options="deptOptions" placeholder="请选择归属部门" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="真实姓名" prop="userName">
-              <el-input placeholder="请输入用户名称" />
+            <el-form-item label="登录名" prop="userName">
+              <el-input v-model="form.userName" placeholder="请输入登录名" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="用户密码" prop="password">
-              <el-input placeholder="请输入用户密码" type="password" />
+              <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20" show-password />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
             <el-form-item label="状态">
-              <el-radio-group>
-                <el-radio>{{}}</el-radio>
+              <el-radio-group v-model="form.status">
+                <el-radio
+                  v-for="dict in statusOptions"
+                  :key="dict.dictCode"
+                  :label="dict.dictCode"
+                >{{ dict.dictName }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -175,14 +180,14 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="备注">
-              <el-input type="textarea" placeholder="请输入内容" />
+              <el-input v-model="form.remark" type="textarea" placeholder="请输入内容" />
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary">确 定</el-button>
-        <el-button>取 消</el-button>
+        <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
   </div>
@@ -191,16 +196,23 @@
 <script>
 import { listUser } from '@/api/user'
 import { deptTreeSelect } from '@/api/dept'
+import Treeselect from '@riophae/vue-treeselect'
 
 export default {
   name: 'User',
-  components: { },
+  components: { Treeselect },
   data() {
     return {
+      // 弹出层标题
+      title: '',
+      // 是否显示弹出层
+      open: false,
       // 遮罩层
       loading: true,
       // 用户表格数据
       userList: null,
+      // 表单参数
+      form: {},
       // 部门名称
       deptName: undefined,
       // 状态数据字典
@@ -209,7 +221,7 @@ export default {
       deptOptions: undefined,
       defaultProps: {
         children: 'children',
-        label: 'name'
+        label: 'label'
       },
       // 查询条件
       queryParams: {
@@ -224,6 +236,20 @@ export default {
           realName: undefined,
           status: undefined
         }
+      },
+      // 表单校验
+      rules: {
+        userName: [
+          { required: true, message: '登录名不能为空', trigger: 'blur' },
+          { min: 2, max: 20, message: '用户名称长度必须介于 2 和 20 之间', trigger: 'blur' }
+        ],
+        realName: [
+          { required: true, message: '真实姓名不能为空', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '用户密码不能为空', trigger: 'blur' },
+          { min: 5, max: 20, message: '用户密码长度必须介于 5 和 20 之间', trigger: 'blur' }
+        ]
       }
     }
   },
@@ -250,6 +276,30 @@ export default {
         this.loading = false
       }
       )
+    },
+    // 表单重置
+    reset() {
+      this.form = {
+        userId: undefined,
+        deptId: undefined,
+        userName: undefined,
+        realName: undefined,
+        password: undefined,
+        status: '1',
+        remark: undefined
+      }
+      this.resetForm('form')
+    },
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.reset()
+      this.open = true
+      this.title = '添加用户'
+    },
+    // 取消按钮
+    cancel() {
+      this.open = false
+      this.reset()
     },
     /** 搜索按钮操作 */
     handleQuery() {
