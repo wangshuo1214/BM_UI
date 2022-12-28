@@ -86,11 +86,12 @@
               plain
               icon="el-icon-delete"
               size="mini"
+              @click="handleDelete"
             >删除</el-button>
           </el-col>
         </el-row>
 
-        <el-table v-loading="loading" :data="userList">
+        <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
           <el-table-column key="userName" label="登录名" align="center" prop="userName" :show-overflow-tooltip="true" />
           <el-table-column key="nickName" label="真实姓名" align="center" prop="realName" :show-overflow-tooltip="true" />
@@ -101,6 +102,7 @@
                 v-model="scope.row.status"
                 active-value="1"
                 inactive-value="0"
+                @change="handleStatusChange(scope.row)"
               />
             </template>
           </el-table-column>
@@ -115,21 +117,24 @@
             width="160"
             class-name="small-padding fixed-width"
           >
-            <template>
+            <template slot-scope="scope">
               <el-button
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
               >修改</el-button>
               <el-button
                 size="mini"
                 type="text"
                 icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
               >删除</el-button>
               <el-button
                 size="mini"
                 type="text"
                 icon="el-icon-key"
+                @click="handleResetPwd(scope.row)"
               >重置</el-button>
             </template>
           </el-table-column>
@@ -148,18 +153,18 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="归属部门" prop="deptId">
-              <treeselect v-model="form.deptId" :options="deptOptions" placeholder="请选择归属部门" />
+              <treeselect v-model="form.deptId" :options="deptOptions" :show-count="true" placeholder="请选择归属部门" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="登录名" prop="userName">
+            <el-form-item v-if="form.userId == undefined" label="登录名" prop="userName">
               <el-input v-model="form.userName" placeholder="请输入登录名" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="用户密码" prop="password">
+            <el-form-item v-if="form.userId == undefined" label="用户密码" prop="password">
               <el-input v-model="form.password" placeholder="请输入用户密码" type="password" maxlength="20" show-password />
             </el-form-item>
           </el-col>
@@ -186,7 +191,7 @@
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -194,15 +199,18 @@
 </template>
 
 <script>
-import { listUser } from '@/api/user'
+import { listUser, updateUser, addUser, getUser, changeUserStatus, delUser, resetPwd } from '@/api/user'
 import { deptTreeSelect } from '@/api/dept'
 import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   name: 'User',
   components: { Treeselect },
   data() {
     return {
+      // 选中数组
+      ids: [],
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -289,6 +297,79 @@ export default {
         remark: undefined
       }
       this.resetForm('form')
+    },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.userId)
+    },
+    // 用户状态修改
+    handleStatusChange(row) {
+      const text = row.status === '1' ? '启用' : '停用'
+      this.$confirm('确认要' + text + row.userName + '吗？').then(function() {
+        return changeUserStatus(row.userId, row.status)
+      }).then(() => {
+        this.msgSuccess(text + '成功')
+      }).catch(function() {
+        row.status = row.status === '0' ? '1' : '0'
+      })
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset()
+      const userId = row.userId
+      getUser(userId).then(response => {
+        this.form = response.data
+        this.open = true
+        this.title = '修改用户'
+      })
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const userIds = row.userId !== undefined ? [row.userId] : this.ids
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delUser(userIds)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      })
+    },
+    /** 重置按钮操作 */
+    handleResetPwd(row) {
+      const userId = row.userId
+      this.$confirm('是否确认重置"' + row.userName + '"的密码?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return resetPwd(userId)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('重置密码成功')
+      })
+    },
+    /** 提交按钮 */
+    submitForm: function() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          if (this.form.userId !== undefined) {
+            updateUser(this.form).then(response => {
+              this.msgSuccess('修改成功')
+              this.open = false
+              this.getList()
+            })
+          } else {
+            addUser(this.form).then(response => {
+              this.msgSuccess('新增成功')
+              this.open = false
+              this.getList()
+            })
+          }
+        }
+      })
     },
     /** 新增按钮操作 */
     handleAdd() {

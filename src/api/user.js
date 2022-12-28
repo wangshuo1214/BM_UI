@@ -55,24 +55,28 @@ export function getUser(bmUserId) {
   })
 }
 
-export function delUser(bmUserId) {
+export function delUser(data) {
   return request({
     url: '/user/delete',
     method: 'post',
-    params: { 'bmUserId': bmUserId }
+    data
+  })
+}
+
+export function resetPwd(userId) {
+  return request({
+    url: '/user/reset',
+    method: 'post',
+    params: { 'bmUserId': userId }
   })
 }
 
 // 用户状态修改
 export function changeUserStatus(userId, status) {
-  const data = {
-    userId,
-    status
-  }
   return request({
     url: '/user/changeStatus',
     method: 'post',
-    data: data
+    params: { 'bmUserId': userId, 'status': status }
   })
 }
 
