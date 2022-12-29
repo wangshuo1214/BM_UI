@@ -99,6 +99,13 @@ export const constantRoutes = [
         name: 'Role',
         component: () => import('@/views/role/index'),
         meta: { title: '角色管理', icon: 'form' }
+      },
+      {
+        path: 'authUser/:roleId',
+        hidden: true,
+        component: () => import('@/views/role/authUser'),
+        name: 'AuthUser',
+        meta: { title: '分配用户', icon: 'form' }
       }
     ]
   },
