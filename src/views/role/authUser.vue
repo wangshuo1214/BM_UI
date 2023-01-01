@@ -40,14 +40,6 @@
           size="mini"
         >批量取消授权</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-close"
-          size="mini"
-        >关闭</el-button>
-      </el-col>
     </el-row>
 
     <el-table v-loading="loading" :data="userList" @selection-change="handleSelectionChange">
@@ -56,7 +48,8 @@
       <el-table-column label="真实姓名" prop="realName" :show-overflow-tooltip="true" />
       <el-table-column label="状态" align="center" prop="status">
         <template slot-scope="scope">
-          <el-tag type="primary">{{ formatDictName(scope.row.status) }}</el-tag>
+          <el-tag v-if="scope.row.status == 1" type="primary">{{ formatDictName(scope.row.status) }}</el-tag>
+          <el-tag v-else type="danger">{{ formatDictName(scope.row.status) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createDate" width="180">
