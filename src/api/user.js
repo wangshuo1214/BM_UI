@@ -80,3 +80,11 @@ export function changeUserStatus(userId, status) {
   })
 }
 
+export function allocatedUserList(data) {
+  return request({
+    url: '/user/allocated',
+    method: 'post',
+    data
+  })
+}
+

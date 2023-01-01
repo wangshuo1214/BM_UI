@@ -45,6 +45,7 @@ Vue.prototype.msgSuccess = function(msg) {
   this.$message({ showClose: true, message: msg, type: 'success' })
 }
 
+// 全局挂载组件
 Vue.component('Pagination', Pagination)
 
 // set ElementUI lang to EN
