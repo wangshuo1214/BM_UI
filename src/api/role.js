@@ -40,3 +40,19 @@ export function delRole(data) {
   })
 }
 
+export function authUserSelect(data) {
+  return request({
+    url: '/role/allocate',
+    method: 'post',
+    data
+  })
+}
+
+// 取消用户授权角色
+export function authUserCancel(data) {
+  return request({
+    url: '/role/unAllocate',
+    method: 'post',
+    data
+  })
+}

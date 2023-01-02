@@ -88,3 +88,11 @@ export function allocatedUserList(data) {
   })
 }
 
+// 查询角色未授权用户列表
+export function unallocatedUserList(data) {
+  return request({
+    url: '/user/unAllocated',
+    method: 'post',
+    data
+  })
+}

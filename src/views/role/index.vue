@@ -78,6 +78,14 @@
       </el-table-column>
     </el-table>
 
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="queryParams.page.pageNum"
+      :limit.sync="queryParams.page.pageSize"
+      @pagination="getList"
+    />
+
     <!-- 添加或修改角色配置对话框 -->
     <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
@@ -194,7 +202,7 @@ export default {
       listRole(this.queryParams).then(
         response => {
           this.roleList = response.data.rows
-          this.total = response.total
+          this.total = response.data.total
           this.loading = false
         }
       )

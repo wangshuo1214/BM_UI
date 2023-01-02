@@ -139,6 +139,14 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="queryParams.page.pageNum"
+          :limit.sync="queryParams.page.pageSize"
+          @pagination="getList"
+        />
       </el-col>
     </el-row>
 
@@ -219,6 +227,8 @@ export default {
       loading: true,
       // 用户表格数据
       userList: null,
+      // 总条数
+      total: 0,
       // 表单参数
       form: {},
       // 部门名称
@@ -305,7 +315,11 @@ export default {
     // 用户状态修改
     handleStatusChange(row) {
       const text = row.status === '1' ? '启用' : '停用'
-      this.$confirm('确认要' + text + row.userName + '吗？').then(function() {
+      this.$confirm('确认要' + text + row.userName + '吗？', '系统提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
         return changeUserStatus(row.userId, row.status)
       }).then(() => {
         this.msgSuccess(text + '成功')
