@@ -159,7 +159,7 @@ export default {
       form: {},
       defaultProps: {
         children: 'children',
-        label: 'name'
+        label: 'label'
       },
       // 查询参数
       queryParams: {
