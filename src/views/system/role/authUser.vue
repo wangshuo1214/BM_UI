@@ -85,8 +85,8 @@
 </template>
 
 <script>
-import { allocatedUserList } from '@/api/user'
-import { authUserCancel } from '@/api/role'
+import { allocatedUserList } from '@/api/system/user'
+import { authUserCancel } from '@/api/system/role'
 import selectUser from './selectUser'
 
 export default {

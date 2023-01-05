@@ -207,8 +207,8 @@
 </template>
 
 <script>
-import { listUser, updateUser, addUser, getUser, changeUserStatus, delUser, resetPwd } from '@/api/user'
-import { deptTreeSelect } from '@/api/dept'
+import { listUser, updateUser, addUser, getUser, changeUserStatus, delUser, resetPwd } from '@/api/system/user'
+import { deptTreeSelect } from '@/api/system/dept'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 

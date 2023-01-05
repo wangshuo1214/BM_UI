@@ -25,7 +25,7 @@ export function logout() {
 
 export function listUser(data) {
   return request({
-    url: '/user/query',
+    url: '/system/user/query',
     method: 'post',
     data
   })
@@ -33,7 +33,7 @@ export function listUser(data) {
 
 export function updateUser(data) {
   return request({
-    url: '/user/update',
+    url: '/system/user/update',
     method: 'post',
     data
   })
@@ -41,7 +41,7 @@ export function updateUser(data) {
 
 export function addUser(data) {
   return request({
-    url: '/user/add',
+    url: '/system/user/add',
     method: 'post',
     data
   })
@@ -49,7 +49,7 @@ export function addUser(data) {
 
 export function getUser(bmUserId) {
   return request({
-    url: '/user/get',
+    url: '/system/user/get',
     method: 'get',
     params: { bmUserId }
   })
@@ -57,7 +57,7 @@ export function getUser(bmUserId) {
 
 export function delUser(data) {
   return request({
-    url: '/user/delete',
+    url: '/system/user/delete',
     method: 'post',
     data
   })
@@ -65,7 +65,7 @@ export function delUser(data) {
 
 export function resetPwd(userId) {
   return request({
-    url: '/user/reset',
+    url: '/system/user/reset',
     method: 'post',
     params: { 'bmUserId': userId }
   })
@@ -74,7 +74,7 @@ export function resetPwd(userId) {
 // 用户状态修改
 export function changeUserStatus(userId, status) {
   return request({
-    url: '/user/changeStatus',
+    url: '/system/user/changeStatus',
     method: 'post',
     params: { 'bmUserId': userId, 'status': status }
   })
@@ -82,7 +82,7 @@ export function changeUserStatus(userId, status) {
 
 export function allocatedUserList(data) {
   return request({
-    url: '/user/allocated',
+    url: '/system/user/allocated',
     method: 'post',
     data
   })
@@ -91,7 +91,7 @@ export function allocatedUserList(data) {
 // 查询角色未授权用户列表
 export function unallocatedUserList(data) {
   return request({
-    url: '/user/unAllocated',
+    url: '/system/user/unAllocated',
     method: 'post',
     data
   })

@@ -19,7 +19,7 @@ import '@/permission' // permission control
 import { handleTree, parseTime, resetForm, selectDictName } from '@/utils/bm'
 import Pagination from '@/components/Pagination'
 import '@/utils/dialog'
-import { getDicts, getSoleDict } from '@/api/dict'
+import { getDicts, getSoleDict } from '@/api/system/dict'
 
 /**
  * If you don't want to use mock-server

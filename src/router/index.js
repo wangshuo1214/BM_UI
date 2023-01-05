@@ -61,7 +61,7 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'Dept',
-        component: () => import('@/views/dept/index'),
+        component: () => import('@/views/system/dept/index'),
         meta: { title: '部门管理', icon: 'form' }
       }
     ]
@@ -73,7 +73,7 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'Menu',
-        component: () => import('@/views/menu/index'),
+        component: () => import('@/views/system/menu/index'),
         meta: { title: '菜单管理', icon: 'form' }
       }
     ]
@@ -85,7 +85,7 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'User',
-        component: () => import('@/views/user/index'),
+        component: () => import('@/views/system/user/index'),
         meta: { title: '用户管理', icon: 'form' }
       }
     ]
@@ -97,13 +97,13 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'Role',
-        component: () => import('@/views/role/index'),
+        component: () => import('@/views/system/role/index'),
         meta: { title: '角色管理', icon: 'form' }
       },
       {
         path: 'authUser/:roleId',
         hidden: true,
-        component: () => import('@/views/role/authUser'),
+        component: () => import('@/views/system/role/authUser'),
         name: 'AuthUser',
         meta: { title: '分配用户', icon: 'form' }
       }
@@ -117,13 +117,13 @@ export const constantRoutes = [
       {
         path: 'index',
         name: 'Dipt',
-        component: () => import('@/views/dict/index'),
+        component: () => import('@/views/system/dict/index'),
         meta: { title: '字典管理', icon: 'form' }
       },
       {
         path: 'type/data/:dictTypeId',
         hidden: true,
-        component: (resolve) => require(['@/views/dict/data'], resolve),
+        component: (resolve) => require(['@/views/system/dict/data'], resolve),
         name: 'Data',
         meta: { title: '字典数据', icon: '' }
       }

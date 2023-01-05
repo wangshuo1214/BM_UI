@@ -113,7 +113,7 @@
 
 <script>
 
-import { queryType, getType, updateType, addType, delType } from '@/api/dict'
+import { queryType, getType, updateType, addType, delType } from '@/api/system/dict'
 
 export default {
   name: 'Dict',

@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import { listType, queryData, getType, updateData, addData, getData, delData } from '@/api/dict'
+import { listType, queryData, getType, updateData, addData, getData, delData } from '@/api/system/dict'
 
 export default {
   name: 'Data',

@@ -241,7 +241,7 @@
 
 <script>
 
-import { listMenu, updateMenu, addMenu, getMenu, listMenuExcludeChild, delMenu } from '@/api/menu'
+import { listMenu, updateMenu, addMenu, getMenu, listMenuExcludeChild, delMenu } from '@/api/system/menu'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import IconSelect from '@/components/IconSelect'

@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function listDept(data) {
   return request({
-    url: '/dept/query',
+    url: '/system/dept/query',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function listDept(data) {
 
 export function updateDept(data) {
   return request({
-    url: '/dept/update',
+    url: '/system/dept/update',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function updateDept(data) {
 
 export function addDept(data) {
   return request({
-    url: '/dept/add',
+    url: '/system/dept/add',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function addDept(data) {
 
 export function getDept(bmDeptId) {
   return request({
-    url: '/dept/get',
+    url: '/system/dept/get',
     method: 'get',
     params: { bmDeptId }
   })
@@ -34,7 +34,7 @@ export function getDept(bmDeptId) {
 
 export function listDeptExcludeChild(bmDeptId) {
   return request({
-    url: '/dept/exclude',
+    url: '/system/dept/exclude',
     method: 'post',
     params: { 'bmDeptId': bmDeptId }
   })
@@ -42,7 +42,7 @@ export function listDeptExcludeChild(bmDeptId) {
 
 export function delDept(bmDeptId) {
   return request({
-    url: '/dept/delete',
+    url: '/system/dept/delete',
     method: 'post',
     params: { 'bmDeptId': bmDeptId }
   })
@@ -50,7 +50,7 @@ export function delDept(bmDeptId) {
 
 export function deptTreeSelect() {
   return request({
-    url: '/dept/deptTree',
+    url: '/system/dept/deptTree',
     method: 'get'
   })
 }

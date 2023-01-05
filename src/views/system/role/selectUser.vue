@@ -55,8 +55,8 @@
 </template>
 
 <script>
-import { unallocatedUserList } from '@/api/user'
-import { authUserSelect } from '@/api/role'
+import { unallocatedUserList } from '@/api/system/user'
+import { authUserSelect } from '@/api/system/role'
 export default {
   props: {
     // 角色编号

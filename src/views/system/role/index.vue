@@ -133,8 +133,8 @@
 
 <script>
 
-import { listRole, addRole, updateRole, getRole, delRole } from '@/api/role'
-import { treeselect as menuTreeselect, roleMenuTreeselect } from '@/api/menu'
+import { listRole, addRole, updateRole, getRole, delRole } from '@/api/system/role'
+import { treeselect as menuTreeselect, roleMenuTreeselect } from '@/api/system/menu'
 
 export default {
   data() {
