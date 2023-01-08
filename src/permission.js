@@ -27,6 +27,10 @@ router.beforeEach(async(to, from, next) => {
         next()
         NProgress.done()
       } else {
+        if (store.getters.roles.length === 0) {
+          store.dispatch('GetInfo').then(() => {
+          })
+        }
         // await store.dispatch('user/getInfo')
         next()
         NProgress.done()
