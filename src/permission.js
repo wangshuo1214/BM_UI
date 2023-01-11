@@ -1,6 +1,5 @@
 import router from './router'
 import store from './store'
-// import { Message } from 'element-ui'
 import NProgress from 'nprogress' // 进度条
 import 'nprogress/nprogress.css' // progress bar style
 import { getToken } from '@/utils/auth' // get token from cookie
@@ -13,11 +12,12 @@ const whiteList = ['/login'] // 路由白名单
 router.beforeEach(async(to, from, next) => {
   // 路由跳转前置钩子函数
   NProgress.start()
-
   // set page title
   document.title = getPageTitle(to.meta.title)
 
   if (getToken()) {
+    debugger
+    to.meta.title && store.dispatch('settings/setTitle', to.meta.title)
     if (to.path === '/login') {
       next({ path: '/' })
       NProgress.done()
@@ -27,25 +27,15 @@ router.beforeEach(async(to, from, next) => {
         next()
         NProgress.done()
       } else {
-        if (store.getters.roles.length === 0) {
-          store.dispatch('GetInfo').then(() => {
+        // 判断当前用户是否已拉取完user_info信息
+        store.dispatch('user/getInfo').then(() => {
+          debugger
+          store.dispatch('GenerateRoutes').then(accessRoutes => {
+            // 根据roles权限生成可访问的路由表
+            router.addRoutes(accessRoutes) // 动态添加可访问路由表
+            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
           })
-        }
-        // await store.dispatch('user/getInfo')
-        next()
-        NProgress.done()
-        // try {
-        //   await store.dispatch('user/getInfo')
-        //   next()
-        // } catch (error) {
-        //   store.dispatch('user/logout').then(() => {
-        //     // Message.error({
-        //     //   message: error || 'Has Error'
-        //     // })
-        //     next({ path: '/' })
-        //   })
-        //   NProgress.done()
-        // }
+        })
       }
     }
   } else {

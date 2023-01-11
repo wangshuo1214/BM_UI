@@ -45,6 +45,7 @@ const actions = {
 
   // 获取用户信息
   getInfo({ commit, state }) {
+    debugger
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response
