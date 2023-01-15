@@ -1,7 +1,7 @@
 import auth from '@/plugins/auth'
 import { getRouters } from '@/api/system/user'
 import Layout from '@/layout/index'
-import router, { constantRoutes, dynamicRoutes } from '@/router'
+import { constantRoutes } from '@/router'
 
 const permission = {
   state: {
@@ -35,9 +35,7 @@ const permission = {
           const rdata = JSON.parse(JSON.stringify(res.data))
           const sidebarRoutes = filterAsyncRouter(sdata)
           const rewriteRoutes = filterAsyncRouter(rdata, false, true)
-          const asyncRoutes = filterDynamicRoutes(dynamicRoutes)
           rewriteRoutes.push({ path: '*', redirect: '/404', hidden: true })
-          router.addRoutes(asyncRoutes)
           commit('SET_ROUTES', rewriteRoutes)
           commit('SET_SIDEBAR_ROUTERS', constantRoutes.concat(sidebarRoutes))
           commit('SET_DEFAULT_ROUTES', sidebarRoutes)
