@@ -1,4 +1,4 @@
-import auth from '@/plugins/auth'
+// import auth from '@/plugins/auth'
 import { getRouters } from '@/api/system/user'
 import Layout from '@/layout/index'
 import { constantRoutes } from '@/router'
@@ -95,23 +95,23 @@ function filterChildren(childrenMap, lastRouter = false) {
   return children
 }
 
-// 动态路由遍历，验证是否具备权限
-export function filterDynamicRoutes(routes) {
-  const res = []
-  routes.forEach(route => {
-    if (route.permissions) {
-      if (auth.hasPermiOr(route.permissions)) {
-        res.push(route)
-      }
-    } else if (route.roles) {
-      if (auth.hasRoleOr(route.roles)) {
-        res.push(route)
-      }
-    }
-    res.push(route)
-  })
-  return res
-}
+// // 动态路由遍历，验证是否具备权限
+// export function filterDynamicRoutes(routes) {
+//   const res = []
+//   routes.forEach(route => {
+//     if (route.permissions) {
+//       if (auth.hasPermiOr(route.permissions)) {
+//         res.push(route)
+//       }
+//     } else if (route.roles) {
+//       if (auth.hasRoleOr(route.roles)) {
+//         res.push(route)
+//       }
+//     }
+//     res.push(route)
+//   })
+//   return res
+// }
 
 // 路由懒加载
 export const loadView = (view) => {

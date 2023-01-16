@@ -1,12 +1,17 @@
 import defaultSettings from '@/settings'
+import variables from '@/assets/styles/element-variables.scss'
 
-const { showSettings, fixedHeader, sidebarLogo } = defaultSettings
+const { sideTheme, showSettings, fixedHeader, sidebarLogo } = defaultSettings
+
+const storageSetting = JSON.parse(localStorage.getItem('layout-setting')) || ''
 
 const state = {
   title: '',
   showSettings: showSettings,
   fixedHeader: fixedHeader,
-  sidebarLogo: sidebarLogo
+  sidebarLogo: sidebarLogo,
+  theme: storageSetting.theme || variables.theme,
+  sideTheme: storageSetting.sideTheme || sideTheme
 }
 
 const mutations = {

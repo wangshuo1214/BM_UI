@@ -67,7 +67,21 @@ export const constantRoutes = [
 ]
 
 // 动态路由，基于用户权限动态去加载
-export const dynamicRoutes = []
+export const dynamicRoutes = [
+  {
+    path: '/dict',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'type/data/:dictId(\\d+)',
+        component: (resolve) => require(['@/views/system/dict/data'], resolve),
+        name: 'Data',
+        meta: { title: '字典数据', icon: '' }
+      }
+    ]
+  }
+]
 
 // 防止连续点击多次路由报错
 // const routerPush = Router.prototype.push

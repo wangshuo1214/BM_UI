@@ -12,7 +12,6 @@ const whiteList = ['/login'] // 路由白名单
 router.beforeEach(async(to, from, next) => {
   // 路由跳转前置钩子函数
   NProgress.start()
-
   if (getToken()) {
     if (to.path === '/login') {
       next({ path: '/' })
