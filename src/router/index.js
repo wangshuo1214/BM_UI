@@ -58,9 +58,23 @@ export const constantRoutes = [
     children: [
       {
         path: 'index',
-        component: () => import('@/views/dashboard'),
+        component: () => import('@/views/home'),
         name: 'Index',
         meta: { title: '首页', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/system/dict/data/:tableType',
+        name: 'DictData',
+        component: () => import('@/views/system/dict/data'),
+        meta: { title: '字典详情', activeMenu: '/system/dict' },
+        hidden: true
+      },
+      {
+        path: '/role-auth/user/:roleId',
+        name: 'AuthUser',
+        component: () => import('@/views/system/role/authUser'),
+        meta: { title: '分配用户', activeMenu: '/system/role' },
+        hidden: true
       }
     ]
   }
