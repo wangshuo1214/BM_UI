@@ -53,7 +53,7 @@
       <el-table-column label="字典名称" align="center" prop="dictName" />
       <el-table-column label="字典类型" align="center" prop="dictType">
         <template slot-scope="scope">
-          <router-link :to="'/system/dict/type/data/' + scope.row.id" class="link-type">
+          <router-link :to="'/system/dict-data/' + scope.row.id" class="link-type">
             <span>{{ scope.row.dictType }}</span>
           </router-link>
         </template>

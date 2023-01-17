@@ -339,7 +339,7 @@ export default {
     },
     handleAuthUser(row) {
       const roleId = row.roleId
-      this.$router.push('/system/role/authUser/' + roleId)
+      this.$router.push('/role-auth/user/' + roleId)
     }
   }
 }
