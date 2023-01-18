@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      title: 'Business Management',
+      title: 'BM',
       logo: logoImg
     }
   },

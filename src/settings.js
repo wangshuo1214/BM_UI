@@ -15,6 +15,11 @@ module.exports = {
   /**
    * 是否显示logo
    */
-  sidebarLogo: false
+  sidebarLogo: true,
+
+  /**
+   * 是否显示 tagsView
+   */
+  tagsView: true
 
 }
