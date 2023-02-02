@@ -1,32 +1,24 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :model="queryParams" :inline="true">
-      <el-form-item label="客户名称" prop="item.clientName">
+      <el-form-item label="商品名称" prop="item.materialName">
         <el-input
-          v-model="queryParams.item.clientName"
-          placeholder="请输入客户名称"
+          v-model="queryParams.item.materialName"
+          placeholder="请输入商品名称"
           clearable
           size="small"
           style="width: 200px"
         />
       </el-form-item>
-      <el-form-item label="电话" prop="item.phone">
-        <el-input
-          v-model="queryParams.item.phone"
-          placeholder="请输入电话"
-          clearable
-          size="small"
-          style="width: 150px"
-        />
-      </el-form-item>
-      <el-form-item label="地址" prop="item.address">
-        <el-input
-          v-model="queryParams.item.address"
-          placeholder="请输入地址"
-          clearable
-          size="small"
-          style="width: 200px"
-        />
+      <el-form-item label="商品类型" prop="item.materialType">
+        <el-select v-model="queryParams.item.materialType" size="small">
+          <el-option
+            v-for="item in materialTypeOptions"
+            :key="item.dictCode"
+            :label="item.dictName"
+            :value="item.dictCode"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -55,11 +47,10 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="clientList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="materialList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
-      <el-table-column key="clientName" label="客户名称" align="center" prop="clientName" :show-overflow-tooltip="true" />
-      <el-table-column key="phone" label="手机号" align="center" prop="phone" :show-overflow-tooltip="true" />
-      <el-table-column key="address" label="地址" align="center" prop="address" :show-overflow-tooltip="true" />
+      <el-table-column key="materialName" label="商品名称" align="center" prop="materialName" :show-overflow-tooltip="true" />
+      <el-table-column key="materialType" label="商品类型" align="center" prop="materialType" :formatter="materialTypeFormat" />
       <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="修改时间" align="center" prop="updateDate" width="160">
         <template slot-scope="scope">
@@ -98,23 +89,23 @@
     />
     <!-- 添加或修改参数配置对话框 -->
     <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="客户名称" prop="clientName">
-              <el-input v-model="form.clientName" placeholder="请输入客户名称" maxlength="30" />
+            <el-form-item label="商品名称" prop="materialName">
+              <el-input v-model="form.materialName" placeholder="请输入商品名称" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="电话" prop="phone">
-              <el-input v-model="form.phone" placeholder="请输入电话" maxlength="11" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="地址" prop="address">
-              <el-input v-model="form.address" placeholder="请输入地址" maxlength="30" />
+            <el-form-item label="商品类型" prop="materialType">
+              <el-select v-model="form.materialType" size="small">
+                <el-option
+                  v-for="item in materialTypeOptions"
+                  :key="item.dictCode"
+                  :label="item.dictName"
+                  :value="item.dictCode"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -135,20 +126,11 @@
 </template>
 
 <script>
-import { listClient, addClient, updateClient, getClient, delClient } from '@/api/client'
+import { listMaterial, addMaterial, updateMaterial, getMaterial, delMaterial } from '@/api/material'
 
 export default {
-  name: 'Client',
+  name: 'Material',
   data() {
-    // var checkPhone = (rule, value, callback) => {
-    //   if (value === '') {
-    //     callback(new Error('请输入绑定的手机号码'))
-    //   } else if (!/^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\d{8}$/.test(value)) {
-    //     callback(new Error('请输入正确的手机号码'))
-    //   } else {
-    //     callback()
-    //   }
-    // }
     return {
       // 选中数组
       ids: [],
@@ -160,8 +142,10 @@ export default {
       form: {},
       // 遮罩层
       loading: true,
-      // 客户表格数据
-      clientList: [],
+      // 商品表格数据
+      materialList: [],
+      // 商品类型列表
+      materialTypeOptions: [],
       // 总条数
       total: 0,
       // 查询条件
@@ -173,29 +157,35 @@ export default {
           orderFlag: 'desc'
         },
         item: {
-          clientName: undefined,
+          materialName: undefined,
           phone: undefined,
           address: undefined
         }
       },
       // 表单校验
       rules: {
-        clientName: [
-          { required: true, message: '客户名称不能为空', trigger: 'blur' },
-          { min: 2, max: 20, message: '客户名称长度必须介于 2 和 20 之间', trigger: 'blur' }
+        materialName: [
+          { required: true, message: '商品名称不能为空', trigger: 'blur' },
+          { min: 2, max: 20, message: '商品名称长度必须介于 2 和 20 之间', trigger: 'blur' }
+        ],
+        materialType: [
+          { required: true, message: '商品类型不能为空', trigger: 'blur' }
         ]
       }
     }
   },
   created() {
     this.getList()
+    this.getDicts('material_type').then(response => {
+      this.materialTypeOptions = response.data
+    })
   },
   methods: {
-    /** 查询客户列表 */
+    /** 查询商品列表 */
     getList() {
       this.loading = true
-      listClient(this.queryParams).then(response => {
-        this.clientList = response.data.rows
+      listMaterial(this.queryParams).then(response => {
+        this.materialList = response.data.rows
         this.total = response.data.total
         this.loading = false
       }
@@ -203,21 +193,25 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const clientIds = row.clientId !== undefined ? [row.clientId] : this.ids
+      const materialIds = row.materialId !== undefined ? [row.materialId] : this.ids
       this.$confirm('是否确认删除选中的数据项?', '警告', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(function() {
-        return delClient(clientIds)
+        return delMaterial(materialIds)
       }).then(() => {
         this.getList()
         this.msgSuccess('删除成功')
       })
     },
+    // 客户类型字典翻译
+    materialTypeFormat(row, column) {
+      return this.selectDictName(this.materialTypeOptions, row.materialType)
+    },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.clientId)
+      this.ids = selection.map(item => item.materialId)
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -233,12 +227,12 @@ export default {
     handleAdd() {
       this.reset()
       this.open = true
-      this.title = '添加客户'
+      this.title = '添加商品'
     },
     // 表单重置
     reset() {
       this.form = {
-        clientName: undefined,
+        materialName: undefined,
         phone: undefined,
         address: undefined,
         remark: undefined
@@ -248,25 +242,25 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
-      const clientId = row.clientId
-      getClient(clientId).then(response => {
+      const materialId = row.materialId
+      getMaterial(materialId).then(response => {
         this.form = response.data
         this.open = true
-        this.title = '修改客户信息'
+        this.title = '修改商品信息'
       })
     },
     /** 提交按钮 */
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
-          if (this.form.clientId !== undefined) {
-            updateClient(this.form).then(response => {
+          if (this.form.materialId !== undefined) {
+            updateMaterial(this.form).then(response => {
               this.msgSuccess('修改成功')
               this.open = false
               this.getList()
             })
           } else {
-            addClient(this.form).then(response => {
+            addMaterial(this.form).then(response => {
               this.msgSuccess('新增成功')
               this.open = false
               this.getList()
@@ -283,3 +277,4 @@ export default {
   }
 }
 </script>
+
