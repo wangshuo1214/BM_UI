@@ -1,15 +1,6 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :model="queryParams" :inline="true">
-      <el-form-item label="订单名称" prop="item.orderName">
-        <el-input
-          v-model="queryParams.item.orderName"
-          placeholder="请输入订单名称"
-          clearable
-          size="small"
-          style="width: 200px"
-        />
-      </el-form-item>
       <el-form-item label="交易对象" prop="item.params.dealerName">
         <el-input
           v-model="queryParams.item.params.dealerName"
@@ -19,7 +10,7 @@
           style="width: 150px"
         />
       </el-form-item>
-      <el-form-item label="订单日期">
+      <el-form-item label="采购日期">
         <el-date-picker
           v-model="queryParams.item.params.orderDate"
           style="width: 240px"
@@ -59,14 +50,13 @@
 
     <el-table v-loading="loading" :data="buyRecordList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
-      <el-table-column key="orderName" label="订单名称" align="center" prop="orderName" :show-overflow-tooltip="true" />
-      <el-table-column key="orderDate" label="订单日期" align="center" prop="orderDate" width="160">
+      <el-table-column key="orderDate" label="采购日期" align="center" prop="orderDate" width="160">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.orderDate) }}</span>
         </template>
       </el-table-column>
       <el-table-column key="dealerName" label="交易对象" align="center" prop="dealerName" :show-overflow-tooltip="true" />
-      <el-table-column key="dealerMoney" label="交易金额" align="center" prop="dealerMoney" />
+      <el-table-column key="dealerMoney" label="采购金额" align="center" prop="dealerMoney" />
       <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" />
       <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column label="修改时间" align="center" prop="updateDate" width="160">
@@ -104,6 +94,70 @@
       :limit.sync="queryParams.page.pageSize"
       @pagination="getList"
     />
+
+    <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="1300px" append-to-body>
+      <!--采购订单-->
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-row>
+          <el-col :span="6" :gutter="24">
+            <el-form-item label="供应商" prop="supplierName">
+              <el-input v-model="form.supplierName" placeholder="请输入供应商名称" maxlength="30" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="采购日期" prop="orderDate">
+              <el-input v-model="form.orderDate" placeholder="采购日期" maxlength="11" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="addRow()"
+          >插入行
+          </el-button>
+        </el-row>
+        <div>
+          <el-table border :data="form.orderDetails">
+            <el-table-column align="center" prop="name" label="名称">
+              <template slot-scope="scope">
+                <el-form-item :prop="'list.' + scope.$index + '.name'" :rules="rules.name">
+                  <el-input v-model="scope.row.name" size="mini" placeholder="请输入" clearable />
+                </el-form-item>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="num" label="数量">
+              <template slot-scope="scope">
+                <el-form-item :prop="'list.' + scope.$index + '.num'" :rules="rules.num">
+                  <el-input v-model="scope.row.num" size="mini" placeholder="请输入" clearable />
+                </el-form-item>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="money" label="金额">
+              <template slot-scope="scope">
+                <el-form-item :prop="'list.' + scope.$index + '.money'" :rules="rules.money">
+                  <el-input v-model="scope.row.money" size="mini" placeholder="请输入" clearable />
+                </el-form-item>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="remark" label="备注">
+              <template slot-scope="scope">
+                <el-form-item :prop="'list.' + scope.$index + '.remark'">
+                  <el-input v-model="scope.row.remark" size="mini" placeholder="请输入" clearable />
+                </el-form-item>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -121,7 +175,10 @@ export default {
       // 是否显示弹出层
       open: false,
       // 表单参数
-      form: {},
+      form: {
+        // 表格数据
+        orderDetails: [{ name: '', num: '', money: '', remark: '' }]
+      },
       // 遮罩层
       loading: true,
       // 采购记录表格数据
@@ -137,12 +194,16 @@ export default {
           orderFlag: 'desc'
         },
         item: {
-          orderName: undefined,
           params: {
             dealerName: undefined,
             orderDate: undefined
           }
         }
+      },
+      rules: {
+        name: [{ required: true, message: '请输入名称！', trigger: 'blur' }],
+        num: [{ required: true, message: '请输入数量！', trigger: 'blur' }],
+        money: [{ required: true, message: '请输入金额！', trigger: 'blur' }]
       }
     }
   },
@@ -197,8 +258,10 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        orderName: undefined,
-        params: undefined
+        params: {
+          dealerName: undefined,
+          orderDate: undefined
+        }
       }
       this.resetForm('form')
     },
@@ -236,6 +299,15 @@ export default {
     cancel() {
       this.open = false
       this.reset()
+    },
+    // 新增
+    addRow() {
+      this.form.list.push({
+        name: '',
+        num: '',
+        money: '',
+        remark: ''
+      })
     }
   }
 }
