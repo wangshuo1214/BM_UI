@@ -13,6 +13,7 @@
       <el-form-item label="采购日期">
         <el-date-picker
           v-model="queryParams.item.params.orderDate"
+          size="small"
           style="width: 240px"
           value-format="yyyy-MM-dd"
           type="daterange"
@@ -95,18 +96,23 @@
       @pagination="getList"
     />
 
-    <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="1300px" append-to-body>
+    <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="1000px" append-to-body>
       <!--采购订单-->
-      <el-form ref="form" :model="form" label-width="80px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="6" :gutter="24">
-            <el-form-item label="供应商" prop="supplierName">
-              <el-input v-model="form.supplierName" placeholder="请输入供应商名称" maxlength="30" />
+            <el-form-item label="供应商" prop="dealerName">
+              <el-input v-model="form.dealerName" placeholder="请输入供应商名称" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
             <el-form-item label="采购日期" prop="orderDate">
-              <el-input v-model="form.orderDate" placeholder="采购日期" maxlength="11" />
+              <!-- <el-input v-model="form.orderDate" placeholder="采购日期" maxlength="11" /> -->
+              <el-date-picker
+                v-model="form.orderDate"
+                type="date"
+                placeholder="选择日期"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -116,37 +122,45 @@
             plain
             icon="el-icon-plus"
             size="mini"
+            style="margin-bottom: 5px; margin-top: 8px;"
             @click="addRow()"
           >插入行
           </el-button>
         </el-row>
         <div>
-          <el-table border :data="form.orderDetails">
+          <el-table border :data="form.params.orderDetails">
+            <el-table-column align="center" prop="name" width="79px" label="操作">
+              <template slot-scope="scope">
+                <i style="color: red; cursor: pointer;" class="el-icon-delete" @click="delRow(scope.$index)" />
+              </template>
+            </el-table-column>
             <el-table-column align="center" prop="name" label="名称">
               <template slot-scope="scope">
-                <el-form-item :prop="'list.' + scope.$index + '.name'" :rules="rules.name">
-                  <el-input v-model="scope.row.name" size="mini" placeholder="请输入" clearable />
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.name'" :rules="rules.name">
+                  <el-input v-model="scope.row.name" size="mini" placeholder="请输入名称" clearable />
                 </el-form-item>
               </template>
             </el-table-column>
             <el-table-column align="center" prop="num" label="数量">
               <template slot-scope="scope">
-                <el-form-item :prop="'list.' + scope.$index + '.num'" :rules="rules.num">
-                  <el-input v-model="scope.row.num" size="mini" placeholder="请输入" clearable />
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.num'" :rules="rules.num" align="center">
+                  <el-input-number v-model="scope.row.num" :min="1" size="mini" />
                 </el-form-item>
               </template>
             </el-table-column>
             <el-table-column align="center" prop="money" label="金额">
               <template slot-scope="scope">
-                <el-form-item :prop="'list.' + scope.$index + '.money'" :rules="rules.money">
-                  <el-input v-model="scope.row.money" size="mini" placeholder="请输入" clearable />
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.money'" :rules="rules.money">
+                  <el-input v-model="scope.row.money" oninput="value=value.replace(/[^0-9.]/g,'')" size="mini">
+                    <span slot="suffix">/ 元 </span>
+                  </el-input>
                 </el-form-item>
               </template>
             </el-table-column>
             <el-table-column align="center" prop="remark" label="备注">
               <template slot-scope="scope">
-                <el-form-item :prop="'list.' + scope.$index + '.remark'">
-                  <el-input v-model="scope.row.remark" size="mini" placeholder="请输入" clearable />
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.remark'">
+                  <el-input v-model="scope.row.remark" type="textarea" :rows="2" placeholder="请输入备注" clearable />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -154,7 +168,7 @@
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary">确 定</el-button>
+        <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -176,9 +190,14 @@ export default {
       open: false,
       // 表单参数
       form: {
-        // 表格数据
-        orderDetails: [{ name: '', num: '', money: '', remark: '' }]
+        dealerName: undefined,
+        orderDate: undefined,
+        params: {
+          orderDetails: [{ name: '', num: '', money: '', remark: '' }]
+        }
       },
+      // 表格长度默认为 1
+      orderDetailsLength: 1,
       // 遮罩层
       loading: true,
       // 采购记录表格数据
@@ -258,9 +277,10 @@ export default {
     // 表单重置
     reset() {
       this.form = {
+        dealerName: undefined,
+        orderDate: undefined,
         params: {
-          dealerName: undefined,
-          orderDate: undefined
+          orderDetails: [{ name: '', num: '', money: '', remark: '' }]
         }
       }
       this.resetForm('form')
@@ -302,13 +322,41 @@ export default {
     },
     // 新增
     addRow() {
-      this.form.list.push({
-        name: '',
-        num: '',
-        money: '',
-        remark: ''
+      if (this.form.params.orderDetails.length < 10) {
+        this.form.params.orderDetails.push({
+          name: '',
+          num: '',
+          money: '',
+          remark: ''
+        })
+        this.orderDetailsLength = this.form.params.orderDetails.length
+      } else {
+        this.$message({
+          type: 'error ',
+          message: '最多可添加10条数据！'
+        })
+      }
+    },
+    // 删除
+    delRow(index) {
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.form.params.orderDetails.splice(index, 1)
       })
+      this.orderDetailsLength = this.form.params.orderDetails.length
     }
   }
 }
 </script>
+<style>
+.myClass .el-form-item__content{
+  margin-left: 0 !important;
+}
+
+tbody .cell .el-form-item {
+  margin-bottom: 0 !important;
+}
+</style>
