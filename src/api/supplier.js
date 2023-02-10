@@ -39,3 +39,11 @@ export function delSupplier(data) {
     data
   })
 }
+
+export function getSuppliers() {
+  return request({
+    url: '/supplier/getAll',
+    method: 'get',
+    params: { }
+  })
+}

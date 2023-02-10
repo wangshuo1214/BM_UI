@@ -53,13 +53,13 @@
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column key="orderDate" label="采购日期" align="center" prop="orderDate" width="160">
         <template slot-scope="scope">
-          <span>{{ parseTime(scope.row.orderDate) }}</span>
+          <span>{{ parseTime(scope.row.orderDate,"{y}-{m}-{d}") }}</span>
         </template>
       </el-table-column>
       <el-table-column key="dealerName" label="交易对象" align="center" prop="dealerName" :show-overflow-tooltip="true" />
       <el-table-column key="dealerMoney" label="采购金额" align="center" prop="dealerMoney" />
-      <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" />
-      <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
+      <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" width="300" />
+      <!-- <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" /> -->
       <el-table-column label="修改时间" align="center" prop="updateDate" width="160">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateDate) }}</span>
@@ -101,16 +101,24 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="6" :gutter="24">
-            <el-form-item label="供应商" prop="dealerName">
-              <el-input v-model="form.dealerName" placeholder="请输入供应商名称" maxlength="30" />
+            <el-form-item label="供应商" prop="dealerId" style="margin-bottom:0" :rules="rules.dealerId" :inline-message="true">
+              <el-select v-model="form.dealerId" clearable placeholder="请选择" size="mini">
+                <el-option
+                  v-for="item in supplierList"
+                  :key="item.supplierId"
+                  :label="item.supplierName"
+                  :value="item.supplierId"
+                />
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="采购日期" prop="orderDate">
-              <!-- <el-input v-model="form.orderDate" placeholder="采购日期" maxlength="11" /> -->
+            <el-form-item label="采购日期" prop="orderDate" style="margin-bottom:0" :rules="rules.orderDate">
               <el-date-picker
                 v-model="form.orderDate"
+                size="mini"
                 type="date"
+                value-format="yyyy-MM-dd"
                 placeholder="选择日期"
               />
             </el-form-item>
@@ -128,29 +136,48 @@
           </el-button>
         </el-row>
         <div>
-          <el-table border :data="form.params.orderDetails">
-            <el-table-column align="center" prop="name" width="79px" label="操作">
+          <el-table border :data="form.params.orderDetails" class="tableClass">
+            <el-table-column align="center" prop="name" width="65px" label="操作">
               <template slot-scope="scope">
                 <i style="color: red; cursor: pointer;" class="el-icon-delete" @click="delRow(scope.$index)" />
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="name" label="名称">
+            <el-table-column align="center" prop="name" label="名称" width="180px">
+              <template slot="header">
+                <span style="color:red">*</span>
+                <span>名称</span>
+              </template>
               <template slot-scope="scope">
-                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.name'" :rules="rules.name">
-                  <el-input v-model="scope.row.name" size="mini" placeholder="请输入名称" clearable />
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.materialId'" :rules="rules.name" :inline-message="true">
+                  <el-select v-model="scope.row.materialId" placeholder="请选择名称" size="mini">
+                    <el-option
+                      v-for="item in materialList"
+                      :key="item.materialId"
+                      :label="item.materialName"
+                      :value="item.materialId"
+                    />
+                  </el-select>
                 </el-form-item>
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="num" label="数量">
+            <el-table-column align="center" prop="num" label="数量" width="150px">
+              <template slot="header">
+                <span style="color:red">*</span>
+                <span>数量</span>
+              </template>
               <template slot-scope="scope">
-                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.num'" :rules="rules.num" align="center">
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.num'" :rules="rules.num" align="center" :inline-message="true">
                   <el-input-number v-model="scope.row.num" :min="1" size="mini" />
                 </el-form-item>
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="money" label="金额">
+            <el-table-column align="center" prop="money" label="金额" width="180px">
+              <template slot="header">
+                <span style="color:red">*</span>
+                <span>金额</span>
+              </template>
               <template slot-scope="scope">
-                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.money'" :rules="rules.money">
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.money'" :rules="rules.money" :inline-message="true">
                   <el-input v-model="scope.row.money" oninput="value=value.replace(/[^0-9.]/g,'')" size="mini">
                     <span slot="suffix">/ 元 </span>
                   </el-input>
@@ -160,7 +187,7 @@
             <el-table-column align="center" prop="remark" label="备注">
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.remark'">
-                  <el-input v-model="scope.row.remark" type="textarea" :rows="2" placeholder="请输入备注" clearable />
+                  <el-input v-model="scope.row.remark" :autosize="{ minRows: 2}" type="textarea" placeholder="请输入备注" clearable />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -177,6 +204,8 @@
 
 <script>
 import { listBuyRecord, addBuyRecord, updateBuyRecord, getBuyRecord, delBuyRecord } from '@/api/buyRecord'
+import { getSuppliers } from '@/api/supplier'
+import { getMaterialByType } from '@/api/material'
 
 export default {
   name: 'BuyRecord',
@@ -190,14 +219,16 @@ export default {
       open: false,
       // 表单参数
       form: {
-        dealerName: undefined,
-        orderDate: undefined,
+        dealerId: undefined,
+        orderDate: this.getCurrentDate(),
         params: {
-          orderDetails: [{ name: '', num: '', money: '', remark: '' }]
+          orderDetails: [{ sort: 1, materialId: '', num: '', money: '', remark: '' }]
         }
       },
-      // 表格长度默认为 1
-      orderDetailsLength: 1,
+      // 供应商下拉框
+      supplierList: [],
+      // 商品下拉框
+      materialList: [],
       // 遮罩层
       loading: true,
       // 采购记录表格数据
@@ -220,7 +251,9 @@ export default {
         }
       },
       rules: {
-        name: [{ required: true, message: '请输入名称！', trigger: 'blur' }],
+        dealerId: [{ required: true, message: '请选择供应商！', trigger: 'blur' }],
+        orderDate: [{ required: true, message: '请输入订单日期！', trigger: 'blur' }],
+        name: [{ required: true, message: '请选择名称！', trigger: 'blur' }],
         num: [{ required: true, message: '请输入数量！', trigger: 'blur' }],
         money: [{ required: true, message: '请输入金额！', trigger: 'blur' }]
       }
@@ -228,8 +261,18 @@ export default {
   },
   created() {
     this.getList()
+    this.getSupplierList()
+    this.getMaterials()
   },
   methods: {
+    /** 获取指定格式当前日期 */
+    getCurrentDate() {
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+      const day = date.getDate()
+      return year + '-' + month + '-' + day
+    },
     /** 查询采购订单列表 */
     getList() {
       this.loading = true
@@ -237,6 +280,20 @@ export default {
         this.buyRecordList = response.data.rows
         this.total = response.data.total
         this.loading = false
+      }
+      )
+    },
+    /** 查询供应商列表 */
+    getSupplierList() {
+      getSuppliers().then(response => {
+        this.supplierList = response.data
+      }
+      )
+    },
+    /** 查询供应商列表 */
+    getMaterials() {
+      getMaterialByType('1').then(response => {
+        this.materialList = response.data
       }
       )
     },
@@ -256,7 +313,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.orderIdId)
+      this.ids = selection.map(item => item.orderId)
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -277,10 +334,10 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        dealerName: undefined,
-        orderDate: undefined,
+        dealerId: undefined,
+        orderDate: this.getCurrentDate(),
         params: {
-          orderDetails: [{ name: '', num: '', money: '', remark: '' }]
+          orderDetails: [{ sort: 1, materialId: '', num: '', money: '', remark: '' }]
         }
       }
       this.resetForm('form')
@@ -324,12 +381,12 @@ export default {
     addRow() {
       if (this.form.params.orderDetails.length < 10) {
         this.form.params.orderDetails.push({
-          name: '',
+          sort: this.form.params.orderDetails.length === 0 ? 1 : this.form.params.orderDetails[this.form.params.orderDetails.length - 1].sort + 1,
+          materialId: '',
           num: '',
           money: '',
           remark: ''
         })
-        this.orderDetailsLength = this.form.params.orderDetails.length
       } else {
         this.$message({
           type: 'error ',
@@ -346,7 +403,6 @@ export default {
       }).then(() => {
         this.form.params.orderDetails.splice(index, 1)
       })
-      this.orderDetailsLength = this.form.params.orderDetails.length
     }
   }
 }
@@ -358,5 +414,14 @@ export default {
 
 tbody .cell .el-form-item {
   margin-bottom: 0 !important;
+}
+
+.tableClass th {
+  padding-bottom: 5px !important;
+  padding-top: 5px !important;
+}
+.tableClass td {
+  padding-bottom: 5px !important;
+  padding-top: 5px !important;
 }
 </style>

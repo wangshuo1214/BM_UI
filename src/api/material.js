@@ -39,3 +39,11 @@ export function delMaterial(data) {
     data
   })
 }
+
+export function getMaterialByType(type) {
+  return request({
+    url: '/material/getByType',
+    method: 'get',
+    params: { type }
+  })
+}
