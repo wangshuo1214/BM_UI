@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :model="queryParams" :inline="true">
-      <el-form-item label="供应商名称" prop="item.supplierName">
+      <el-form-item label="采购商名称" prop="item.supplierName">
         <el-input
           v-model="queryParams.item.supplierName"
-          placeholder="请输入供应商名称"
+          placeholder="请输入采购商名称"
           clearable
           size="small"
           style="width: 200px"
@@ -57,7 +57,7 @@
 
     <el-table v-loading="loading" :data="supplierList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
-      <el-table-column key="supplierName" label="供应商名称" align="center" prop="supplierName" :show-overflow-tooltip="true" />
+      <el-table-column key="supplierName" label="采购商名称" align="center" prop="supplierName" :show-overflow-tooltip="true" />
       <el-table-column key="phone" label="手机号" align="center" prop="phone" :show-overflow-tooltip="true" />
       <el-table-column key="address" label="地址" align="center" prop="address" :show-overflow-tooltip="true" />
       <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
@@ -101,8 +101,8 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="12">
-            <el-form-item label="供应商名称" prop="supplierName">
-              <el-input v-model="form.supplierName" placeholder="请输入供应商名称" maxlength="30" />
+            <el-form-item label="采购商名称" prop="supplierName">
+              <el-input v-model="form.supplierName" placeholder="请输入采购商名称" maxlength="30" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -151,7 +151,7 @@ export default {
       form: {},
       // 遮罩层
       loading: true,
-      // 供应商表格数据
+      // 采购商表格数据
       supplierList: [],
       // 总条数
       total: 0,
@@ -172,8 +172,8 @@ export default {
       // 表单校验
       rules: {
         supplierName: [
-          { required: true, message: '供应商名称不能为空', trigger: 'blur' },
-          { min: 2, max: 20, message: '供应商名称长度必须介于 2 和 20 之间', trigger: 'blur' }
+          { required: true, message: '采购商名称不能为空', trigger: 'blur' },
+          { min: 2, max: 20, message: '采购商名称长度必须介于 2 和 20 之间', trigger: 'blur' }
         ]
       }
     }
@@ -182,7 +182,7 @@ export default {
     this.getList()
   },
   methods: {
-    /** 查询供应商列表 */
+    /** 查询采购商列表 */
     getList() {
       this.loading = true
       listSupplier(this.queryParams).then(response => {
@@ -224,7 +224,7 @@ export default {
     handleAdd() {
       this.reset()
       this.open = true
-      this.title = '添加供应商'
+      this.title = '添加采购商'
     },
     // 表单重置
     reset() {
@@ -243,7 +243,7 @@ export default {
       getSupplier(supplierId).then(response => {
         this.form = response.data
         this.open = true
-        this.title = '修改供应商信息'
+        this.title = '修改采购商信息'
       })
     },
     /** 提交按钮 */

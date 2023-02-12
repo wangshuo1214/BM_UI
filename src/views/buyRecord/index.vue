@@ -48,19 +48,23 @@
         >删除</el-button>
       </el-col>
     </el-row>
-
-    <el-table v-loading="loading" :data="buyRecordList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="50" align="center" />
-      <el-table-column key="orderDate" label="采购日期" align="center" prop="orderDate" width="160">
+    <el-row>
+      <a style="font-size:5px; font-family: cursive; margin-left: 10px; font-size: 15px;">
+        截止目前为止，累计开支<font style="color:cornflowerblue; font-size: 17px; color: red;">{{ totalCostInfo }}</font>元，
+        其中采购开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ buyCostInfo }}</font>元、
+        其他开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ otherCostInfo }}</font>元。
+      </a>
+    </el-row>
+    <el-table v-loading="loading" :data="buyRecordList" border @selection-change="handleSelectionChange">
+      <el-table-column type="selection" align="center" />
+      <el-table-column key="orderDate" label="采购日期" align="center" prop="orderDate">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.orderDate,"{y}-{m}-{d}") }}</span>
         </template>
       </el-table-column>
-      <el-table-column key="dealerName" label="交易对象" align="center" prop="dealerName" :show-overflow-tooltip="true" />
+      <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" width="680px" />
       <el-table-column key="dealerMoney" label="采购金额" align="center" prop="dealerMoney" />
-      <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" width="300" />
-      <!-- <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" /> -->
-      <el-table-column label="修改时间" align="center" prop="updateDate" width="160">
+      <el-table-column label="修改时间" align="center" prop="updateDate" width="180px">
         <template slot-scope="scope">
           <span>{{ parseTime(scope.row.updateDate) }}</span>
         </template>
@@ -68,7 +72,6 @@
       <el-table-column
         label="操作"
         align="center"
-        width="160"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
@@ -100,18 +103,6 @@
       <!--采购订单-->
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
-          <el-col :span="6" :gutter="24">
-            <el-form-item label="供应商" prop="dealerId" style="margin-bottom:0" :rules="rules.dealerId" :inline-message="true">
-              <el-select v-model="form.dealerId" clearable placeholder="请选择" size="mini">
-                <el-option
-                  v-for="item in supplierList"
-                  :key="item.supplierId"
-                  :label="item.supplierName"
-                  :value="item.supplierId"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
           <el-col :span="6">
             <el-form-item label="采购日期" prop="orderDate" style="margin-bottom:0" :rules="rules.orderDate">
               <el-date-picker
@@ -142,14 +133,14 @@
                 <i style="color: red; cursor: pointer;" class="el-icon-delete" @click="delRow(scope.$index)" />
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="name" label="名称" width="180px">
+            <el-table-column align="center" prop="name" label="采购商品" width="180px">
               <template slot="header">
                 <span style="color:red">*</span>
-                <span>名称</span>
+                <span>采购商品</span>
               </template>
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.materialId'" :rules="rules.name" :inline-message="true">
-                  <el-select v-model="scope.row.materialId" placeholder="请选择名称" size="mini">
+                  <el-select v-model="scope.row.materialId" placeholder="请选择采购商品" size="mini">
                     <el-option
                       v-for="item in materialList"
                       :key="item.materialId"
@@ -160,14 +151,21 @@
                 </el-form-item>
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="num" label="数量" width="150px">
+            <el-table-column align="center" prop="dealerId" label="消费对象" width="180px">
               <template slot="header">
                 <span style="color:red">*</span>
-                <span>数量</span>
+                <span>消费对象</span>
               </template>
               <template slot-scope="scope">
-                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.num'" :rules="rules.num" align="center" :inline-message="true">
-                  <el-input-number v-model="scope.row.num" :min="1" size="mini" />
+                <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.dealerId'" :rules="rules.dealerId" :inline-message="true">
+                  <el-select v-model="scope.row.dealerId" placeholder="请选择消费对象" size="mini">
+                    <el-option
+                      v-for="item in supplierList"
+                      :key="item.supplierId"
+                      :label="item.supplierName"
+                      :value="item.supplierId"
+                    />
+                  </el-select>
                 </el-form-item>
               </template>
             </el-table-column>
@@ -178,7 +176,11 @@
               </template>
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.money'" :rules="rules.money" :inline-message="true">
-                  <el-input v-model="scope.row.money" oninput="value=value.replace(/[^0-9.]/g,'')" size="mini">
+                  <el-input
+                    v-model="scope.row.money"
+                    oninput="value=value.replace(/[^0-9.]/g,'')"
+                    size="mini"
+                  >
                     <span slot="suffix">/ 元 </span>
                   </el-input>
                 </el-form-item>
@@ -187,7 +189,7 @@
             <el-table-column align="center" prop="remark" label="备注">
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.remark'">
-                  <el-input v-model="scope.row.remark" :autosize="{ minRows: 2}" type="textarea" placeholder="请输入备注" clearable />
+                  <el-input v-model="scope.row.remark" :rows="2" maxlength="500" type="textarea" placeholder="请输入备注" clearable />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -203,7 +205,7 @@
 </template>
 
 <script>
-import { listBuyRecord, addBuyRecord, updateBuyRecord, getBuyRecord, delBuyRecord } from '@/api/buyRecord'
+import { listBuyRecord, addBuyRecord, updateBuyRecord, getBuyRecord, delBuyRecord, getCostInfo } from '@/api/buyRecord'
 import { getSuppliers } from '@/api/supplier'
 import { getMaterialByType } from '@/api/material'
 
@@ -213,19 +215,27 @@ export default {
     return {
       // 选中数组
       ids: [],
+      // 累计开支
+      totalCostInfo: '0',
+      // 采购开支
+      buyCostInfo: '0',
+      // 其他开支
+      otherCostInfo: '0',
       // 弹出层标题
       title: '',
       // 是否显示弹出层
       open: false,
+      // 累计开支
+      totalCost: 0,
       // 表单参数
       form: {
         dealerId: undefined,
         orderDate: this.getCurrentDate(),
         params: {
-          orderDetails: [{ sort: 1, materialId: '', num: '', money: '', remark: '' }]
+          orderDetails: [{ sort: 1, materialId: '', dealerId: '', money: '', remark: '' }]
         }
       },
-      // 供应商下拉框
+      // 消费下拉框
       supplierList: [],
       // 商品下拉框
       materialList: [],
@@ -240,8 +250,8 @@ export default {
         page: {
           pageNum: 1,
           pageSize: 10,
-          orderByColumn: 'orderDate',
-          orderFlag: 'desc'
+          orderByColumn: '',
+          orderFlag: ''
         },
         item: {
           params: {
@@ -251,10 +261,9 @@ export default {
         }
       },
       rules: {
-        dealerId: [{ required: true, message: '请选择供应商！', trigger: 'blur' }],
         orderDate: [{ required: true, message: '请输入订单日期！', trigger: 'blur' }],
-        name: [{ required: true, message: '请选择名称！', trigger: 'blur' }],
-        num: [{ required: true, message: '请输入数量！', trigger: 'blur' }],
+        name: [{ required: true, message: '请选择采购商品！', trigger: 'blur' }],
+        dealerId: [{ required: true, message: '请选择消费对象！', trigger: 'blur' }],
         money: [{ required: true, message: '请输入金额！', trigger: 'blur' }]
       }
     }
@@ -282,15 +291,21 @@ export default {
         this.loading = false
       }
       )
+      getCostInfo().then(response => {
+        this.totalCostInfo = response.data.totalCostInfo
+        this.buyCostInfo = response.data.buyCostInfo
+        this.otherCostInfo = response.data.otherCostInfo
+      }
+      )
     },
-    /** 查询供应商列表 */
+    /** 查询消费对象列表 */
     getSupplierList() {
       getSuppliers().then(response => {
         this.supplierList = response.data
       }
       )
     },
-    /** 查询供应商列表 */
+    /** 查询商品列表 */
     getMaterials() {
       getMaterialByType('1').then(response => {
         this.materialList = response.data
@@ -322,6 +337,7 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
+      this.queryParams.item.params.orderDate = undefined
       this.resetForm('queryForm')
       this.handleQuery()
     },
@@ -334,10 +350,9 @@ export default {
     // 表单重置
     reset() {
       this.form = {
-        dealerId: undefined,
         orderDate: this.getCurrentDate(),
         params: {
-          orderDetails: [{ sort: 1, materialId: '', num: '', money: '', remark: '' }]
+          orderDetails: [{ sort: 1, materialId: '', dealerId: '', money: '', remark: '' }]
         }
       }
       this.resetForm('form')
@@ -356,6 +371,9 @@ export default {
     submitForm: function() {
       this.$refs['form'].validate(valid => {
         if (valid) {
+          for (const item of this.form.params.orderDetails) {
+            item.money = this.keepTwoDecimalFull(item.money)
+          }
           if (this.form.orderId !== undefined) {
             updateBuyRecord(this.form).then(response => {
               this.msgSuccess('修改成功')
@@ -403,6 +421,23 @@ export default {
       }).then(() => {
         this.form.params.orderDetails.splice(index, 1)
       })
+    },
+    keepTwoDecimalFull(num) {
+      var result = parseFloat(num)
+      if (isNaN(result)) {
+        return ''
+      }
+      result = Math.round(num * 100) / 100
+      var s_x = result.toString()
+      var pos_decimal = s_x.indexOf('.')
+      if (pos_decimal < 0) {
+        pos_decimal = s_x.length
+        s_x += '.'
+      }
+      while (s_x.length <= pos_decimal + 2) {
+        s_x += '0'
+      }
+      return s_x
     }
   }
 }

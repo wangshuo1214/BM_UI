@@ -39,3 +39,11 @@ export function delBuyRecord(data) {
     data
   })
 }
+
+export function getCostInfo() {
+  return request({
+    url: '/buyRecord/costInfo',
+    method: 'get',
+    params: { }
+  })
+}
