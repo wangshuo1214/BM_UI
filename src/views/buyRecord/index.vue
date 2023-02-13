@@ -51,8 +51,8 @@
     <el-row>
       <a style="font-size:5px; font-family: cursive; margin-left: 10px; font-size: 15px;">
         截止目前为止，累计开支<font style="color:cornflowerblue; font-size: 17px; color: red;">{{ totalCostInfo }}</font>元，
-        其中采购开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ buyCostInfo }}</font>元、
-        其他开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ otherCostInfo }}</font>元。
+        其中本月开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ monthCostInfo }}</font>元、
+        今日开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ dayCostInfo }}</font>元。
       </a>
     </el-row>
     <el-table v-loading="loading" :data="buyRecordList" border @selection-change="handleSelectionChange">
@@ -133,14 +133,14 @@
                 <i style="color: red; cursor: pointer;" class="el-icon-delete" @click="delRow(scope.$index)" />
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="name" label="采购商品" width="180px">
+            <el-table-column align="center" prop="name" label="消费项" width="180px">
               <template slot="header">
                 <span style="color:red">*</span>
-                <span>采购商品</span>
+                <span>消费项</span>
               </template>
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.materialId'" :rules="rules.name" :inline-message="true">
-                  <el-select v-model="scope.row.materialId" placeholder="请选择采购商品" size="mini">
+                  <el-select v-model="scope.row.materialId" placeholder="请选择消费项" size="mini">
                     <el-option
                       v-for="item in materialList"
                       :key="item.materialId"
@@ -151,14 +151,14 @@
                 </el-form-item>
               </template>
             </el-table-column>
-            <el-table-column align="center" prop="dealerId" label="消费对象" width="180px">
+            <el-table-column align="center" prop="dealerId" label="供应商" width="180px">
               <template slot="header">
                 <span style="color:red">*</span>
-                <span>消费对象</span>
+                <span>供应商</span>
               </template>
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.dealerId'" :rules="rules.dealerId" :inline-message="true">
-                  <el-select v-model="scope.row.dealerId" placeholder="请选择消费对象" size="mini">
+                  <el-select v-model="scope.row.dealerId" placeholder="请选择供应商" size="mini">
                     <el-option
                       v-for="item in supplierList"
                       :key="item.supplierId"
@@ -217,10 +217,10 @@ export default {
       ids: [],
       // 累计开支
       totalCostInfo: '0',
-      // 采购开支
-      buyCostInfo: '0',
-      // 其他开支
-      otherCostInfo: '0',
+      // 本月开支
+      monthCostInfo: '0',
+      // 今日开支
+      dayCostInfo: '0',
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -262,7 +262,7 @@ export default {
       },
       rules: {
         orderDate: [{ required: true, message: '请输入订单日期！', trigger: 'blur' }],
-        name: [{ required: true, message: '请选择采购商品！', trigger: 'blur' }],
+        name: [{ required: true, message: '请选择消费项！', trigger: 'blur' }],
         dealerId: [{ required: true, message: '请选择消费对象！', trigger: 'blur' }],
         money: [{ required: true, message: '请输入金额！', trigger: 'blur' }]
       }
@@ -293,8 +293,8 @@ export default {
       )
       getCostInfo().then(response => {
         this.totalCostInfo = response.data.totalCostInfo
-        this.buyCostInfo = response.data.buyCostInfo
-        this.otherCostInfo = response.data.otherCostInfo
+        this.monthCostInfo = response.data.monthCostInfo
+        this.dayCostInfo = response.data.dayCostInfo
       }
       )
     },
