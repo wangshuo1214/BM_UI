@@ -39,3 +39,17 @@ export function delEmployee(data) {
     data
   })
 }
+
+export function employeeTreeSelect() {
+  return request({
+    url: '/employee/employeeTree',
+    method: 'get'
+  })
+}
+
+export function getAllEmployee() {
+  return request({
+    url: '/employee/allEmployee',
+    method: 'get'
+  })
+}

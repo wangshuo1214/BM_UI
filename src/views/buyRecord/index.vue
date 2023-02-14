@@ -401,7 +401,7 @@ export default {
         this.form.params.orderDetails.push({
           sort: this.form.params.orderDetails.length === 0 ? 1 : this.form.params.orderDetails[this.form.params.orderDetails.length - 1].sort + 1,
           materialId: '',
-          num: '',
+          dealerId: '',
           money: '',
           remark: ''
         })
