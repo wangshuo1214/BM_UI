@@ -5,6 +5,7 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <el-input
+            v-model="employeeName"
             placeholder="请输入员工名称"
             clearable
             size="small"
@@ -19,6 +20,7 @@
             :data="employeeOptions"
             :props="defaultProps"
             :expand-on-click-node="false"
+            :filter-node-method="filterNode"
             default-expand-all
             highlight-current
             @node-click="handleNodeClick"
@@ -41,8 +43,8 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
-            <el-button icon="el-icon-refresh" size="mini">重置</el-button>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
 
@@ -58,7 +60,7 @@
           </el-col>
         </el-row>
 
-        <el-table border>
+        <el-table v-loading="loading" :data="makeRecordList" border>
           <el-table-column type="selection" align="center" />
           <el-table-column key="completeDate" label="完成日期" align="center" prop="completeDate" :show-overflow-tooltip="true">
             <template slot-scope="scope">
@@ -84,11 +86,6 @@
                 type="text"
                 icon="el-icon-delete"
               >删除</el-button>
-              <el-button
-                size="mini"
-                type="text"
-                icon="el-icon-key"
-              >重置</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -99,27 +96,27 @@
       <!--采购订单-->
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
-          <el-col :span="6">
-            <el-form-item label="完成日期" prop="completeDate" style="margin-bottom:0" :rules="rules.completeDate">
+          <el-col :span="6" :gutter="24">
+            <el-form-item label="完成日期" prop="completeDate" style="margin-bottom:0;" :rules="rules.completeDate" :inline-message="true">
               <el-date-picker
                 v-model="form.completeDate"
                 size="mini"
                 type="date"
                 value-format="yyyy-MM-dd"
                 placeholder="选择日期"
+                style="width:150px"
               />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="员工名称" prop="completeDate" style="margin-bottom:0" :rules="rules.completeDate">
-              <el-select v-model="form.employeeId" disabled placeholder="请选择" size="mini">
-                <el-option
-                  v-for="item in allEmployeeOptions"
-                  :key="item.employeeId"
-                  :label="item.employeeName"
-                  :value="item.employeeId"
-                />
-              </el-select>
+            <el-form-item label="员工名称" style="margin-bottom:0">
+              <el-input
+                v-model="currentEmployeeName"
+                placeholder="请输入内容"
+                :disabled="true"
+                size="mini"
+              />
+
             </el-form-item>
           </el-col>
         </el-row>
@@ -209,13 +206,13 @@
 <script>
 import { listMakeRecord, addMakeRecord, updateMakeRecord, getMakeRecord, delMakeRecord, payWage } from '@/api/makeRecord'
 import { getMaterialByType } from '@/api/material'
-import { employeeTreeSelect, getAllEmployee } from '@/api/employee'
+import { employeeTreeSelect, getEmployee } from '@/api/employee'
 
 export default {
   name: 'MakeRecord',
   data() {
     return {
-    // 员工树选项
+      // 员工树选项
       employeeOptions: undefined,
       // 弹出层标题
       title: '',
@@ -229,6 +226,10 @@ export default {
       materialList: [],
       // 员工下拉框
       allEmployeeOptions: [],
+      // 员工名称
+      currentEmployeeName: undefined,
+      // 员工树筛选
+      employeeName: undefined,
       // 查询条件
       queryParams: {
         page: {
@@ -267,10 +268,15 @@ export default {
       }
     }
   },
+  watch: {
+    // 根据名称筛选部门树
+    employeeName(val) {
+      this.$refs.tree.filter(val)
+    }
+  },
   created() {
     this.getEmployeeTree()
     this.getMaterials()
-    this.getEmployeeList()
   },
   methods: {
     /** 查询员工下拉树结构 */
@@ -280,21 +286,24 @@ export default {
         this.getList()
       })
     },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.page.pageNum = 1
+      this.getList()
+    },
     /** 查询采购订单列表 */
     getList() {
       this.loading = true
       this.queryParams.item.employeeId = this.queryParams.item.employeeId ? this.queryParams.item.employeeId : this.employeeOptions[0].id
+      getEmployee(this.queryParams.item.employeeId).then(response => {
+        this.currentEmployeeName = response.data.employeeName
+      })
       listMakeRecord(this.queryParams).then(response => {
         this.makeRecordList = response.data.rows
         this.total = response.data.total
         this.loading = false
       }
       )
-    },
-    getEmployeeList() {
-      getAllEmployee().then(response => {
-        this.allEmployeeOptions = response.data.rows
-      })
     },
     // 节点单击事件
     handleNodeClick(data) {
@@ -332,6 +341,12 @@ export default {
     cancel() {
       this.open = false
       this.reset()
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.queryParams.item.params.completeDate = undefined
+      this.resetForm('queryForm')
+      this.handleQuery()
     },
     /** 新增按钮操作 */
     handleAdd() {
@@ -377,6 +392,22 @@ export default {
       const month = date.getMonth() + 1
       const day = date.getDate()
       return year + '-' + month + '-' + day
+    },
+    // 删除
+    delRow(index) {
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.form.params.bmMakeRecordDetails.splice(index, 1)
+      })
+    },
+    // 筛选节点
+    filterNode(value, data) {
+      debugger
+      if (!value) return true
+      return data.label.indexOf(value) !== -1
     },
     keepTwoDecimalFull(num) {
       var result = parseFloat(num)
