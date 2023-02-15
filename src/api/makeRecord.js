@@ -24,11 +24,11 @@ export function updateMakeRecord(data) {
   })
 }
 
-export function getMakeRecord(bmOrderId) {
+export function getMakeRecord(id) {
   return request({
     url: '/makeRecord/get',
     method: 'get',
-    params: { bmOrderId }
+    params: { id }
   })
 }
 

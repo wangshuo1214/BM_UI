@@ -75,20 +75,30 @@
             width="160"
             class-name="small-padding fixed-width"
           >
-            <template>
+            <template slot-scope="scope">
               <el-button
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
               >修改</el-button>
               <el-button
                 size="mini"
                 type="text"
                 icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
               >删除</el-button>
             </template>
           </el-table-column>
         </el-table>
+
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="queryParams.page.pageNum"
+          :limit.sync="queryParams.page.pageSize"
+          @pagination="getList"
+        />
       </el-col>
     </el-row>
 
@@ -163,7 +173,7 @@
               </template>
               <template slot-scope="scope">
                 <el-form-item class="myClass" :prop="'params.bmMakeRecordDetails.' + scope.$index + '.num'" :rules="rules.num" :inline-message="true">
-                  <el-input-number v-model="scope.row.num" size="mini" />
+                  <el-input-number v-model="scope.row.num" size="mini" :min="1" />
                 </el-form-item>
               </template>
             </el-table-column>
@@ -204,7 +214,7 @@
 </template>
 
 <script>
-import { listMakeRecord, addMakeRecord, updateMakeRecord, getMakeRecord, delMakeRecord, payWage } from '@/api/makeRecord'
+import { listMakeRecord, addMakeRecord, updateMakeRecord, getMakeRecord, delMakeRecord } from '@/api/makeRecord'
 import { getMaterialByType } from '@/api/material'
 import { employeeTreeSelect, getEmployee } from '@/api/employee'
 
@@ -361,6 +371,30 @@ export default {
         this.materialList = response.data
       }
       )
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const id = row.id
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delMakeRecord(id)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      })
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset()
+      const id = row.id
+      getMakeRecord(id).then(response => {
+        this.form = response.data
+        this.open = true
+        this.title = '修改生产'
+      })
     },
     /** 提交按钮 */
     submitForm: function() {
