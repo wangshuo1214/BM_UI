@@ -58,10 +58,24 @@
               @click="handleAdd"
             >新增</el-button>
           </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="success"
+              plain
+              icon="el-icon-check"
+              size="mini"
+              @click="payWage"
+            >结算工资</el-button>
+          </el-col>
+        </el-row>
+        <el-row>
+          <a style="font-family: cursive; margin-left: 10px; font-size: 15px;">
+            截止目前为止，<font style="color:cornflowerblue; font-size: 20px; color: blue; font-weight: bold">{{ currentEmployeeName }}</font>需支付工资
+            <font style="color:cornflowerblue; font-size: 20px; color: red; font-weight: bold">{{ needPayWage }}</font>元。
+          </a>
         </el-row>
 
         <el-table v-loading="loading" :data="makeRecordList" border>
-          <el-table-column type="selection" align="center" />
           <el-table-column key="completeDate" label="完成日期" align="center" prop="completeDate" :show-overflow-tooltip="true">
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.completeDate,"{y}-{m}-{d}") }}</span>
@@ -69,6 +83,12 @@
           </el-table-column>
           <el-table-column key="makeRecordDeatil" label="生产记录详情" align="center" prop="makeRecordDeatil" :show-overflow-tooltip="true" />
           <el-table-column key="totalWage" label="总工费" align="center" prop="totalWage" :show-overflow-tooltip="true" />
+          <el-table-column key="wageFlag" label="支付标志" align="center" prop="wageFlag">
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.wageFlag === '1'" type="success">已支付</el-tag>
+              <el-tag v-if="scope.row.wageFlag === '0'" type="danger">未支付</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column
             label="操作"
             align="center"
@@ -77,17 +97,26 @@
           >
             <template slot-scope="scope">
               <el-button
+                v-if="scope.row.wageFlag === '0'"
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
                 @click="handleUpdate(scope.row)"
               >修改</el-button>
               <el-button
+                v-if="scope.row.wageFlag === '0'"
                 size="mini"
                 type="text"
                 icon="el-icon-delete"
                 @click="handleDelete(scope.row)"
               >删除</el-button>
+              <el-button
+                v-if="scope.row.wageFlag === '1'"
+                size="mini"
+                type="text"
+                icon="el-icon-view"
+                @click="moreDetail(scope.row)"
+              >详情</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -210,11 +239,104 @@
       </div>
     </el-dialog>
 
+    <el-dialog v-dialogDrag :title="'生产记录详情'" :visible.sync="detailOpen" width="1000px" append-to-body>
+      <!--采购订单-->
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-row>
+          <el-col :span="6" :gutter="24">
+            <el-form-item label="完成日期" prop="completeDate" style="margin-bottom:0;" :inline-message="true">
+              <el-date-picker
+                v-model="form.completeDate"
+                size="mini"
+                type="date"
+                value-format="yyyy-MM-dd"
+                placeholder="选择日期"
+                style="width:150px"
+                :disabled="true"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="员工名称" style="margin-bottom:0">
+              <el-input
+                v-model="currentEmployeeName"
+                placeholder="请输入内容"
+                :disabled="true"
+                size="mini"
+              />
+
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <div>
+          <el-table border :data="form.params.bmMakeRecordDetails" class="tableClass">
+            <el-table-column align="center" prop="materialId" label="生产项" width="180px">
+              <template slot="header">
+                <span style="color:red">*</span>
+                <span>生产项</span>
+              </template>
+              <template slot-scope="scope">
+                <el-form-item class="myClass" :prop="'params.bmMakeRecordDetails.' + scope.$index + '.materialId'" :inline-message="true">
+                  <el-select v-model="scope.row.materialId" placeholder="请选择生产项" size="mini" :disabled="true">
+                    <el-option
+                      v-for="item in materialList"
+                      :key="item.materialId"
+                      :label="item.materialName"
+                      :value="item.materialId"
+                    />
+                  </el-select>
+                </el-form-item>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="num" label="数量" width="180px">
+              <template slot="header">
+                <span style="color:red">*</span>
+                <span>数量</span>
+              </template>
+              <template slot-scope="scope">
+                <el-form-item class="myClass" :prop="'params.bmMakeRecordDetails.' + scope.$index + '.num'" :inline-message="true">
+                  <el-input-number v-model="scope.row.num" size="mini" :min="1" :disabled="true" />
+                </el-form-item>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="wage" label="工费" width="180px">
+              <template slot="header">
+                <span style="color:red">*</span>
+                <span>工费</span>
+              </template>
+              <template slot-scope="scope">
+                <el-form-item class="myClass" :prop="'params.bmMakeRecordDetails.' + scope.$index + '.wage'" :inline-message="true">
+                  <el-input
+                    v-model="scope.row.wage"
+                    oninput="value=value.replace(/[^0-9.]/g,'')"
+                    size="mini"
+                    :disabled="true"
+                  >
+                    <span slot="suffix">/ 元 </span>
+                  </el-input>
+                </el-form-item>
+              </template>
+            </el-table-column>
+            <el-table-column align="center" prop="remark" label="备注">
+              <template slot-scope="scope">
+                <el-form-item class="myClass" :prop="'params.bmMakeRecordDetails.' + scope.$index + '.remark'">
+                  <el-input v-model="scope.row.remark" :rows="2" maxlength="500" type="textarea" placeholder="请输入备注" clearable :disabled="true" />
+                </el-form-item>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
-import { listMakeRecord, addMakeRecord, updateMakeRecord, getMakeRecord, delMakeRecord } from '@/api/makeRecord'
+import { listMakeRecord, addMakeRecord, updateMakeRecord, getMakeRecord, delMakeRecord, payWage, getNeedPayWage } from '@/api/makeRecord'
 import { getMaterialByType } from '@/api/material'
 import { employeeTreeSelect, getEmployee } from '@/api/employee'
 
@@ -228,18 +350,22 @@ export default {
       title: '',
       // 是否显示弹出层
       open: false,
+      // 详情显示弹出层
+      detailOpen: false,
       // 遮罩层
       loading: true,
       // 采购记录表格数据
       makeRecordList: [],
       // 商品下拉框
       materialList: [],
-      // 员工下拉框
-      allEmployeeOptions: [],
       // 员工名称
       currentEmployeeName: undefined,
+      // 当前员工需要支付的工资
+      needPayWage: undefined,
       // 员工树筛选
       employeeName: undefined,
+      // 字典工资支付标志
+      wageFlagOptions: [],
       // 查询条件
       queryParams: {
         page: {
@@ -285,6 +411,9 @@ export default {
     }
   },
   created() {
+    this.getDicts('wage_flag').then(response => {
+      this.wageFlagOptions = response.data
+    })
     this.getEmployeeTree()
     this.getMaterials()
   },
@@ -307,6 +436,9 @@ export default {
       this.queryParams.item.employeeId = this.queryParams.item.employeeId ? this.queryParams.item.employeeId : this.employeeOptions[0].id
       getEmployee(this.queryParams.item.employeeId).then(response => {
         this.currentEmployeeName = response.data.employeeName
+      })
+      getNeedPayWage(this.queryParams.item.employeeId).then(response => {
+        this.needPayWage = response.data
       })
       listMakeRecord(this.queryParams).then(response => {
         this.makeRecordList = response.data.rows
@@ -350,6 +482,7 @@ export default {
     // 取消按钮
     cancel() {
       this.open = false
+      this.detailOpen = false
       this.reset()
     },
     /** 重置按钮操作 */
@@ -364,6 +497,22 @@ export default {
       this.open = true
       this.title = '添加生产记录'
       this.form.employeeId = this.queryParams.item.employeeId
+    },
+    /** 结算工资 */
+    payWage() {
+      const name = this.currentEmployeeName
+      const money = this.needPayWage
+      const employeeId = this.queryParams.item.employeeId
+      this.$confirm('是否确认支付"' + name + '"的"' + money + '"元工资?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return payWage(employeeId)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      })
     },
     /** 查询商品列表 */
     getMaterials() {
@@ -394,6 +543,14 @@ export default {
         this.form = response.data
         this.open = true
         this.title = '修改生产'
+      })
+    },
+    moreDetail(row) {
+      this.reset()
+      const id = row.id
+      getMakeRecord(id).then(response => {
+        this.form = response.data
+        this.detailOpen = true
       })
     },
     /** 提交按钮 */

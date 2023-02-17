@@ -36,7 +36,7 @@ export function delMakeRecord(data) {
   return request({
     url: '/makeRecord/delete',
     method: 'post',
-    data
+    params: { 'id': data }
   })
 }
 
@@ -44,7 +44,15 @@ export function payWage(data) {
   return request({
     url: '/makeRecord/payWage',
     method: 'post',
-    data
+    params: { 'employeeId': data }
+  })
+}
+
+export function getNeedPayWage(employeeId) {
+  return request({
+    url: '/makeRecord/needPay',
+    method: 'get',
+    params: { employeeId }
   })
 }
 

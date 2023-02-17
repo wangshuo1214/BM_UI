@@ -50,9 +50,9 @@
     </el-row>
     <el-row>
       <a style="font-size:5px; font-family: cursive; margin-left: 10px; font-size: 15px;">
-        截止目前为止，累计开支<font style="color:cornflowerblue; font-size: 17px; color: red;">{{ totalCostInfo }}</font>元，
-        其中本月开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ monthCostInfo }}</font>元、
-        今日开支<font style="color:cornflowerblue;  font-size: 17px; color: red;">{{ dayCostInfo }}</font>元。
+        截止目前为止，累计开支<font style="color:cornflowerblue; font-size: 20px; color: red; font-weight: bold">{{ totalCostInfo }}</font>元，
+        其中本月开支<font style="color:cornflowerblue;  font-size: 20px; color: red; font-weight: bold">{{ monthCostInfo }}</font>元、
+        今日开支<font style="color:cornflowerblue;  font-size: 20px; color: red; font-weight: bold">{{ dayCostInfo }}</font>元。
       </a>
     </el-row>
     <el-table v-loading="loading" :data="buyRecordList" border @selection-change="handleSelectionChange">
