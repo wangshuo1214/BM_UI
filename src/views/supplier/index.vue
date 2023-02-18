@@ -55,7 +55,7 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="supplierList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="supplierList" border @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column key="supplierName" label="供应商名称" align="center" prop="supplierName" :show-overflow-tooltip="true" />
       <el-table-column key="phone" label="手机号" align="center" prop="phone" :show-overflow-tooltip="true" />

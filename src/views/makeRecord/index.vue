@@ -511,7 +511,7 @@ export default {
         return payWage(employeeId)
       }).then(() => {
         this.getList()
-        this.msgSuccess('删除成功')
+        this.msgSuccess('支付成功')
       })
     },
     /** 查询商品列表 */

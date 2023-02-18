@@ -47,3 +47,10 @@ export function employeeTreeSelect() {
   })
 }
 
+export function getAllEmployee() {
+  return request({
+    url: '/employee/allEmployee',
+    method: 'get'
+  })
+}
+

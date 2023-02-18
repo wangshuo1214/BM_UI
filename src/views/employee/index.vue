@@ -46,7 +46,7 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="employeeList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="employeeList" border @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column key="employeeName" label="员工名称" align="center" prop="employeeName" :show-overflow-tooltip="true" />
       <el-table-column key="phone" label="手机号" align="center" prop="phone" :show-overflow-tooltip="true" />

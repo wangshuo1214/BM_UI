@@ -47,7 +47,7 @@
       </el-col>
     </el-row>
 
-    <el-table v-loading="loading" :data="materialList" @selection-change="handleSelectionChange">
+    <el-table v-loading="loading" :data="materialList" border @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
       <el-table-column key="materialName" label="商品名称" align="center" prop="materialName" :show-overflow-tooltip="true" />
       <el-table-column key="materialType" label="商品类型" align="center" prop="materialType" :formatter="materialTypeFormat" />
