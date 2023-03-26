@@ -16,9 +16,14 @@
           <el-tree
             ref="tree"
             node-key="id"
+            :data="clientOptions"
+            :props="defaultProps"
             :expand-on-click-node="false"
+            :filter-node-method="filterNode"
             default-expand-all
             highlight-current
+            :default-expanded-keys="expandDefault"
+            @node-click="handleNodeClick"
           />
         </div>
       </el-col>
@@ -32,7 +37,7 @@
               style="width: 150px"
             />
           </el-form-item>
-          <el-form-item label="采购日期">
+          <el-form-item label="交易日期">
             <el-date-picker
               size="small"
               style="width: 240px"
@@ -67,15 +72,15 @@
             >删除</el-button>
           </el-col>
         </el-row>
-        <el-table border>
+        <el-table v-loading="loading" :data="sellRecordList" border>
           <el-table-column type="selection" align="center" />
-          <el-table-column key="orderDate" label="采购日期" align="center" prop="orderDate">
+          <el-table-column key="orderDate" label="销售日期" align="center" prop="orderDate">
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.orderDate,"{y}-{m}-{d}") }}</span>
             </template>
           </el-table-column>
           <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" width="580px" />
-          <el-table-column key="dealerMoney" label="采购金额" align="center" prop="dealerMoney" />
+          <el-table-column key="dealerMoney" label="销售金额" align="center" prop="dealerMoney" />
           <el-table-column label="修改时间" align="center" prop="updateDate">
             <template slot-scope="scope">
               <span>{{ parseTime(scope.row.updateDate) }}</span>
@@ -100,18 +105,101 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="queryParams.page.pageNum"
+          :limit.sync="queryParams.page.pageSize"
+          @pagination="getList"
+        />
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
+import { clientTreeSelect } from '@/api/client'
+import { listSellRecord } from '@/api/sellRecord'
+
 export default {
   name: 'SellRecord',
   data() {
     return {
-      clientOptions: undefined
+      clientOptions: [],
+      // 销售记录表格数据
+      sellRecordList: [],
+      // 遮罩层
+      loading: true,
+      // 查询条件
+      queryParams: {
+        page: {
+          pageNum: 1,
+          pageSize: 10,
+          orderByColumn: '',
+          orderFlag: ''
+        },
+        item: {
+          params: {
+            orderDate: undefined,
+            clientId: undefined
+          }
+        }
+      },
+      // 总条数
+      total: 0,
+      defaultProps: {
+        children: 'children',
+        label: 'label'
+      },
+      // 左侧树默认选中第一个
+      expandDefault: []
+    }
+  },
+  watch: {
+    expandDefault(newVal, oldVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          document.querySelector('.el-tree-node__children .el-tree-node__content').click()
+        })
+      }
+    }
+  },
+  created() {
+    this.getCLientTree()
+    this.getList()
+  },
+  methods: {
+    // 筛选节点
+    filterNode(value, data) {
+      if (!value) return true
+      return data.label.indexOf(value) !== -1
+    },
+    /** 查询部门下拉树结构 */
+    getCLientTree() {
+      clientTreeSelect().then(response => {
+        this.clientOptions = response.data
+        if (this.clientOptions) {
+          this.expandDefault.push(this.clientOptions[0].id)
+        }
+      })
+    },
+    /** 查询采购订单列表 */
+    getList() {
+      this.loading = true
+      listSellRecord(this.queryParams).then(response => {
+        this.sellRecordList = response.data.rows
+        this.total = response.data.total
+        this.loading = false
+      }
+      )
+    },
+    // 节点单击事件
+    handleNodeClick(data) {
+      this.queryParams.item.params.clientId = data.id
+      this.getList()
     }
   }
+
 }
 </script>

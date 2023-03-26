@@ -23,6 +23,7 @@
             :filter-node-method="filterNode"
             default-expand-all
             highlight-current
+            :default-expanded-keys="expandDefault"
             @node-click="handleNodeClick"
           />
         </div>
@@ -401,10 +402,21 @@ export default {
       defaultProps: {
         children: 'children',
         label: 'label'
-      }
+      },
+      // 左侧树默认选中第一个
+      expandDefault: []
     }
   },
   watch: {
+    expandDefault(newVal, oldVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          document
+            .querySelector('.el-tree-node__children .el-tree-node__content')
+            .click()
+        })
+      }
+    },
     // 根据名称筛选部门树
     employeeName(val) {
       this.$refs.tree.filter(val)
@@ -422,6 +434,9 @@ export default {
     getEmployeeTree() {
       employeeTreeSelect().then(response => {
         this.employeeOptions = response.data
+        if (this.employeeOptions) {
+          this.expandDefault.push(this.employeeOptions[0].id)
+        }
         this.getList()
       })
     },

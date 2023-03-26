@@ -39,3 +39,10 @@ export function delClient(data) {
     data
   })
 }
+
+export function clientTreeSelect() {
+  return request({
+    url: '/client/clientTree',
+    method: 'get'
+  })
+}
