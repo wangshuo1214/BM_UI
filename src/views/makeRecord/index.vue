@@ -412,7 +412,7 @@ export default {
       if (newVal) {
         this.$nextTick(() => {
           document
-            .querySelector('.el-tree-node__children .el-tree-node__content')
+            .querySelector('.el-tree-node__content')
             .click()
         })
       }

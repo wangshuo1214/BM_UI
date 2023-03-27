@@ -5,6 +5,7 @@
       <el-col :span="4" :xs="24">
         <div class="head-container">
           <el-input
+            v-model="clientName"
             placeholder="请输入客户名称"
             clearable
             size="small"
@@ -28,17 +29,10 @@
         </div>
       </el-col>
       <el-col :span="20" :xs="24">
-        <el-form ref="queryForm" :inline="true">
-          <el-form-item label="交易对象" prop="item.params.dealerName">
-            <el-input
-              placeholder="请输入交易对象"
-              clearable
-              size="small"
-              style="width: 150px"
-            />
-          </el-form-item>
-          <el-form-item label="交易日期">
+        <el-form ref="queryForm" :model="queryParams" :inline="true">
+          <el-form-item label="销售日期">
             <el-date-picker
+              v-model="queryParams.item.params.orderDate"
               size="small"
               style="width: 240px"
               value-format="yyyy-MM-dd"
@@ -49,8 +43,8 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
-            <el-button icon="el-icon-refresh" size="mini">重置</el-button>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
 
@@ -61,6 +55,7 @@
               plain
               icon="el-icon-plus"
               size="mini"
+              @click="handleAdd"
             >新增</el-button>
           </el-col>
           <el-col :span="1.5">
@@ -79,7 +74,7 @@
               <span>{{ parseTime(scope.row.orderDate,"{y}-{m}-{d}") }}</span>
             </template>
           </el-table-column>
-          <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" width="580px" />
+          <el-table-column key="orderDeatil" label="订单详情" align="center" prop="orderDeatil" :show-overflow-tooltip="true" width="550px" />
           <el-table-column key="dealerMoney" label="销售金额" align="center" prop="dealerMoney" />
           <el-table-column label="修改时间" align="center" prop="updateDate">
             <template slot-scope="scope">
@@ -113,14 +108,122 @@
           :limit.sync="queryParams.page.pageSize"
           @pagination="getList"
         />
+
+        <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="1000px" append-to-body>
+          <!--销售订单-->
+          <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+            <el-row>
+              <el-col :span="6">
+                <el-form-item label="销售日期" prop="orderDate" style="margin-bottom:0" :rules="rules.orderDate">
+                  <el-date-picker
+                    v-model="form.orderDate"
+                    size="mini"
+                    type="date"
+                    value-format="yyyy-MM-dd"
+                    placeholder="选择日期"
+                    style="width: 180px;"
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="6">
+                <el-form-item label="客户" prop="currentClientName" style="margin-bottom:0">
+                  <el-input
+                    v-model="currentClientName"
+                    placeholder="请输入内容"
+                    :disabled="true"
+                    size="mini"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-button
+                type="primary"
+                plain
+                icon="el-icon-plus"
+                size="mini"
+                style="margin-bottom: 5px; margin-top: 8px;"
+                @click="addRow()"
+              >插入行
+              </el-button>
+            </el-row>
+            <div>
+              <el-table border :data="form.params.orderDetails" class="tableClass">
+                <el-table-column align="center" prop="name" width="65px" label="操作">
+                  <template slot-scope="scope">
+                    <i style="color: red; cursor: pointer;" class="el-icon-delete" @click="delRow(scope.$index)" />
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="name" label="消费项" width="180px">
+                  <template slot="header">
+                    <span style="color:red">*</span>
+                    <span>销售项</span>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.materialId'" :rules="rules.name" :inline-message="true">
+                      <el-select v-model="scope.row.materialId" placeholder="请选择消费项" size="mini">
+                        <el-option
+                          v-for="item in materialList"
+                          :key="item.materialId"
+                          :label="item.materialName"
+                          :value="item.materialId"
+                        />
+                      </el-select>
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="num" label="数量" width="180px">
+                  <template slot="header">
+                    <span style="color:red">*</span>
+                    <span>数量</span>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.num'" :rules="rules.num" :inline-message="true">
+                      <el-input-number v-model="scope.row.num" size="mini" :min="1" />
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="money" label="金额" width="180px">
+                  <template slot="header">
+                    <span style="color:red">*</span>
+                    <span>金额</span>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.money'" :rules="rules.money" :inline-message="true">
+                      <el-input
+                        v-model="scope.row.money"
+                        oninput="value=value.replace(/[^0-9.]/g,'')"
+                        size="mini"
+                      >
+                        <span slot="suffix">/ 元 </span>
+                      </el-input>
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="remark" label="备注">
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.remark'">
+                      <el-input v-model="scope.row.remark" :rows="2" maxlength="500" type="textarea" placeholder="请输入备注" clearable />
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="submitForm">确 定</el-button>
+            <el-button @click="cancel">取 消</el-button>
+          </div>
+        </el-dialog>
       </el-col>
     </el-row>
   </div>
 </template>
 
 <script>
-import { clientTreeSelect } from '@/api/client'
-import { listSellRecord } from '@/api/sellRecord'
+import { clientTreeSelect, getClient } from '@/api/client'
+import { listSellRecord, updateSellRecord, addSellRecord } from '@/api/sellRecord'
+import { getMaterialByType } from '@/api/material'
 
 export default {
   name: 'SellRecord',
@@ -153,21 +256,50 @@ export default {
         label: 'label'
       },
       // 左侧树默认选中第一个
-      expandDefault: []
+      expandDefault: [],
+      // 客户树筛选
+      clientName: undefined,
+      // 弹出层标题
+      title: '',
+      // 是否显示弹出层
+      open: false,
+      // 表单参数
+      form: {
+        orderDate: this.getCurrentDate(),
+        params: {
+          clientId: undefined,
+          orderDetails: [{ sort: 1, materialId: '', money: '', remark: '' }]
+        }
+      },
+      rules: {
+        orderDate: [{ required: true, message: '请输入订单日期！', trigger: 'blur' }],
+        name: [{ required: true, message: '请选择消费项！', trigger: 'blur' }],
+        num: [{ required: true, message: '请输入数量！', trigger: 'blur' }],
+        money: [{ required: true, message: '请输入金额！', trigger: 'blur' }]
+      },
+      // 商品下拉框
+      materialList: [],
+      // 左侧树点击的客户名称
+      currentClientName: undefined
     }
   },
   watch: {
     expandDefault(newVal, oldVal) {
       if (newVal) {
         this.$nextTick(() => {
-          document.querySelector('.el-tree-node__children .el-tree-node__content').click()
+          document.querySelector('.el-tree-node__content').click()
         })
       }
+    },
+    // 根据名称筛选部门树
+    clientName(val) {
+      this.$refs.tree.filter(val)
     }
   },
   created() {
     this.getCLientTree()
     this.getList()
+    this.getMaterials()
   },
   methods: {
     // 筛选节点
@@ -197,9 +329,150 @@ export default {
     // 节点单击事件
     handleNodeClick(data) {
       this.queryParams.item.params.clientId = data.id
+      this.form.params.clientId = data.id
+      this.getCurrentClientName()
       this.getList()
+    },
+    // 获取客户名称
+    getCurrentClientName() {
+      getClient(this.form.params.clientId).then(response => {
+        this.currentClientName = response.data.clientName
+      }
+      )
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.page.pageNum = 1
+      this.getList()
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.queryParams.item.params.orderDate = undefined
+      this.resetForm('queryForm')
+      this.handleQuery()
+    },
+    /** 获取指定格式当前日期 */
+    getCurrentDate() {
+      const date = new Date()
+      const year = date.getFullYear()
+      const month = date.getMonth() + 1
+      const day = date.getDate()
+      return year + '-' + month + '-' + day
+    },
+    // 新增
+    addRow() {
+      if (this.form.params.orderDetails.length < 10) {
+        this.form.params.orderDetails.push({
+          sort: this.form.params.orderDetails.length === 0 ? 1 : this.form.params.orderDetails[this.form.params.orderDetails.length - 1].sort + 1,
+          materialId: '',
+          money: '',
+          remark: ''
+        })
+      } else {
+        this.$message({
+          type: 'error ',
+          message: '最多可添加10条数据！'
+        })
+      }
+    },
+    // 删除
+    delRow(index) {
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.form.params.orderDetails.splice(index, 1)
+      })
+    },
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.reset()
+      this.open = true
+      this.title = '添加采购订单'
+    },
+    // 表单重置
+    reset() {
+      this.form = {
+        orderDate: this.getCurrentDate(),
+        params: {
+          orderDetails: [{ sort: 1, materialId: '', num: '', money: '', remark: '' }]
+        }
+      }
+      this.resetForm('form')
+    },
+    /** 查询商品列表 */
+    getMaterials() {
+      getMaterialByType('0').then(response => {
+        this.materialList = response.data
+      }
+      )
+    },
+    /** 提交按钮 */
+    submitForm: function() {
+      this.$refs['form'].validate(valid => {
+        if (valid) {
+          for (const item of this.form.params.orderDetails) {
+            item.money = this.keepTwoDecimalFull(item.money)
+          }
+          if (this.form.orderId !== undefined) {
+            updateSellRecord(this.form).then(response => {
+              this.msgSuccess('修改成功')
+              this.open = false
+              this.getList()
+            })
+          } else {
+            addSellRecord(this.form).then(response => {
+              this.msgSuccess('新增成功')
+              this.open = false
+              this.getList()
+            })
+          }
+        }
+      })
+    },
+    keepTwoDecimalFull(num) {
+      var result = parseFloat(num)
+      if (isNaN(result)) {
+        return ''
+      }
+      result = Math.round(num * 100) / 100
+      var s_x = result.toString()
+      var pos_decimal = s_x.indexOf('.')
+      if (pos_decimal < 0) {
+        pos_decimal = s_x.length
+        s_x += '.'
+      }
+      while (s_x.length <= pos_decimal + 2) {
+        s_x += '0'
+      }
+      return s_x
+    },
+    // 取消按钮
+    cancel() {
+      this.open = false
+      this.reset()
     }
   }
 
 }
 </script>
+
+<style>
+.myClass .el-form-item__content{
+  margin-left: 0 !important;
+}
+
+tbody .cell .el-form-item {
+  margin-bottom: 0 !important;
+}
+
+.tableClass th {
+  padding-bottom: 5px !important;
+  padding-top: 5px !important;
+}
+.tableClass td {
+  padding-bottom: 5px !important;
+  padding-top: 5px !important;
+}
+</style>

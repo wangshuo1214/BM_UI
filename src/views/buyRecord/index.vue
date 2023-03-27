@@ -229,7 +229,7 @@ export default {
       totalCost: 0,
       // 表单参数
       form: {
-        dealerId: undefined,
+        // dealerId: undefined,
         orderDate: this.getCurrentDate(),
         params: {
           orderDetails: [{ sort: 1, materialId: '', dealerId: '', money: '', remark: '' }]
