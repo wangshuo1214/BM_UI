@@ -64,10 +64,27 @@
               plain
               icon="el-icon-delete"
               size="mini"
+              @click="handleDelete"
             >删除</el-button>
           </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="warning"
+              plain
+              icon="el-icon-money"
+              size="mini"
+            >客户汇款</el-button>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="success"
+              plain
+              icon="el-icon-check"
+              size="mini"
+            >清账</el-button>
+          </el-col>
         </el-row>
-        <el-table v-loading="loading" :data="sellRecordList" border>
+        <el-table v-loading="loading" :data="sellRecordList" border @selection-change="handleSelectionChange">
           <el-table-column type="selection" align="center" />
           <el-table-column key="orderDate" label="销售日期" align="center" prop="orderDate">
             <template slot-scope="scope">
@@ -86,17 +103,28 @@
             align="center"
             class-name="small-padding fixed-width"
           >
-            <template>
+            <template slot-scope="scope">
               <el-button
+                v-if="scope.row.clearFlag === '0'"
                 size="mini"
                 type="text"
                 icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
               >修改</el-button>
               <el-button
+                v-if="scope.row.clearFlag === '0'"
                 size="mini"
                 type="text"
                 icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
               >删除</el-button>
+              <el-button
+                v-if="scope.row.clearFlag === '1'"
+                size="mini"
+                type="text"
+                icon="el-icon-view"
+                @click="moreDetail(scope.row)"
+              >详情</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -215,6 +243,53 @@
             <el-button @click="cancel">取 消</el-button>
           </div>
         </el-dialog>
+
+        <!-- 添加或修改参数配置对话框 -->
+        <el-dialog v-dialogDrag :title="客户转账" :visible.sync="transferOpen" width="600px" append-to-body>
+          <el-form ref="transferForm" :model="transferForm" :rules="transferRules" label-width="80px">
+            <el-row>
+              <el-col :span="12">
+                <el-form-item label="客户" prop="realName">
+                  <el-input v-model="transferForm.realName" placeholder="请输入用户名称" maxlength="30" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="归属部门" prop="deptId">
+                  <treeselect v-model="transferForm.deptId" :options="deptOptions" :show-count="true" placeholder="请选择归属部门" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="12">
+                <el-form-item v-if="transferForm.userId == undefined" label="登录名" prop="userName">
+                  <el-input v-model="transferForm.userName" placeholder="请输入登录名" maxlength="30" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="状态">
+                  <el-radio-group v-model="transferForm.status">
+                    <el-radio
+                      v-for="dict in statusOptions"
+                      :key="dict.dictCode"
+                      :label="dict.dictCode"
+                    >{{ dict.dictName }}</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="备注">
+                  <el-input v-model="transferForm.remark" type="textarea" placeholder="请输入内容" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button type="primary">确 定</el-button>
+            <el-button>取 消</el-button>
+          </div>
+        </el-dialog>
       </el-col>
     </el-row>
   </div>
@@ -222,13 +297,15 @@
 
 <script>
 import { clientTreeSelect, getClient } from '@/api/client'
-import { listSellRecord, updateSellRecord, addSellRecord } from '@/api/sellRecord'
+import { listSellRecord, updateSellRecord, addSellRecord, getSellRecord, delSellRecord } from '@/api/sellRecord'
 import { getMaterialByType } from '@/api/material'
 
 export default {
   name: 'SellRecord',
   data() {
     return {
+      // 选中数组
+      ids: [],
       clientOptions: [],
       // 销售记录表格数据
       sellRecordList: [],
@@ -263,6 +340,8 @@ export default {
       title: '',
       // 是否显示弹出层
       open: false,
+      // 转账弹出层
+      transferOpen: false,
       // 表单参数
       form: {
         orderDate: this.getCurrentDate(),
@@ -271,14 +350,28 @@ export default {
           orderDetails: [{ sort: 1, materialId: '', money: '', remark: '' }]
         }
       },
+      // 转账表单
+      transferForm: {
+        clientId: undefined,
+        transferWay: undefined,
+        transferMoney: undefined,
+        transferDate: undefined
+      },
       rules: {
         orderDate: [{ required: true, message: '请输入订单日期！', trigger: 'blur' }],
         name: [{ required: true, message: '请选择消费项！', trigger: 'blur' }],
         num: [{ required: true, message: '请输入数量！', trigger: 'blur' }],
         money: [{ required: true, message: '请输入金额！', trigger: 'blur' }]
       },
+      transferRules: {
+        transferWay: [{ required: true, message: '请选择转账方式！', trigger: 'blur' }],
+        transferMoney: [{ required: true, message: '请输入转账金额！', trigger: 'blur' }],
+        transferDate: [{ required: true, message: '请选择转账日期！', trigger: 'blur' }]
+      },
       // 商品下拉框
       materialList: [],
+      // 左侧树点击的客户ID
+      currentClientId: undefined,
       // 左侧树点击的客户名称
       currentClientName: undefined
     }
@@ -298,7 +391,6 @@ export default {
   },
   created() {
     this.getCLientTree()
-    this.getList()
     this.getMaterials()
   },
   methods: {
@@ -329,13 +421,13 @@ export default {
     // 节点单击事件
     handleNodeClick(data) {
       this.queryParams.item.params.clientId = data.id
-      this.form.params.clientId = data.id
+      this.currentClientId = data.id
       this.getCurrentClientName()
       this.getList()
     },
     // 获取客户名称
     getCurrentClientName() {
-      getClient(this.form.params.clientId).then(response => {
+      getClient(this.currentClientId).then(response => {
         this.currentClientName = response.data.clientName
       }
       )
@@ -396,6 +488,7 @@ export default {
       this.form = {
         orderDate: this.getCurrentDate(),
         params: {
+          clientId: this.currentClientId,
           orderDetails: [{ sort: 1, materialId: '', num: '', money: '', remark: '' }]
         }
       }
@@ -452,7 +545,44 @@ export default {
     cancel() {
       this.open = false
       this.reset()
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset()
+      const id = row.orderId
+      getSellRecord(id).then(response => {
+        this.form = response.data
+        this.open = true
+        this.title = '修改销售记录'
+      })
+    },
+    /** 删除按钮操作 */
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const orderIds = row.orderId !== undefined ? [row.orderId] : this.ids
+      this.$confirm('是否确认删除选中的数据项?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return delSellRecord(orderIds)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('删除成功')
+      })
+    },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.orderId)
     }
+    // moreDetail(row) {
+    //   this.reset()
+    //   const id = row.orderId
+    //   getSellRecord(id).then(response => {
+    //     this.form = response.data
+    //     this.detailOpen = true
+    //   })
+    // }
   }
 
 }
