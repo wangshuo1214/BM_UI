@@ -40,11 +40,27 @@ export function delSellRecord(data) {
   })
 }
 
-export function getSellInfo() {
+export function getSellInfo(bmClientId) {
   return request({
     url: '/sellRecord/sellInfo',
     method: 'get',
-    params: { }
+    params: { bmClientId }
+  })
+}
+
+export function payMoney(data) {
+  return request({
+    url: '/sellRecord/payMoney',
+    method: 'post',
+    data
+  })
+}
+
+export function clearMoney(bmClientId) {
+  return request({
+    url: '/sellRecord/clearMoney',
+    method: 'post',
+    params: { 'bmClientId': bmClientId }
   })
 }
 

@@ -73,6 +73,7 @@
               plain
               icon="el-icon-money"
               size="mini"
+              @click="handleTransfer"
             >客户汇款</el-button>
           </el-col>
           <el-col :span="1.5">
@@ -81,8 +82,16 @@
               plain
               icon="el-icon-check"
               size="mini"
+              @click="clientClearMoney"
             >清账</el-button>
           </el-col>
+        </el-row>
+        <el-row>
+          <a style="font-size:6px; font-family: cursive; margin-left: 10px; font-size: 15px;">
+            截止目前为止，<font style="color:cornflowerblue; font-size: 20px; color: red; font-weight: bold">{{ currentClientName }}</font>
+            现欠款<font style="color:cornflowerblue; font-size: 20px; color: red; font-weight: bold">{{ currentDebt }}</font>元，
+            总共汇款<font style="color:cornflowerblue;  font-size: 20px; color: red; font-weight: bold">{{ totalSellMoney }}</font>元。
+          </a>
         </el-row>
         <el-table v-loading="loading" :data="sellRecordList" border @selection-change="handleSelectionChange">
           <el-table-column type="selection" align="center" />
@@ -244,50 +253,158 @@
           </div>
         </el-dialog>
 
-        <!-- 添加或修改参数配置对话框 -->
-        <el-dialog v-dialogDrag :title="客户转账" :visible.sync="transferOpen" width="600px" append-to-body>
-          <el-form ref="transferForm" :model="transferForm" :rules="transferRules" label-width="80px">
+        <el-dialog v-dialogDrag :title="title" :visible.sync="detailOpen" width="1000px" append-to-body>
+          <!--销售订单-->
+          <el-form ref="form" :model="form" :rules="rules" label-width="80px">
             <el-row>
-              <el-col :span="12">
-                <el-form-item label="客户" prop="realName">
-                  <el-input v-model="transferForm.realName" placeholder="请输入用户名称" maxlength="30" />
+              <el-col :span="6">
+                <el-form-item label="销售日期" prop="orderDate" style="margin-bottom:0" :rules="rules.orderDate">
+                  <el-date-picker
+                    v-model="form.orderDate"
+                    size="mini"
+                    type="date"
+                    value-format="yyyy-MM-dd"
+                    placeholder="选择日期"
+                    style="width: 180px;"
+                    :disabled="true"
+                  />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
-                <el-form-item label="归属部门" prop="deptId">
-                  <treeselect v-model="transferForm.deptId" :options="deptOptions" :show-count="true" placeholder="请选择归属部门" />
+              <el-col :span="6">
+                <el-form-item label="客户" prop="currentClientName" style="margin-bottom:0">
+                  <el-input
+                    v-model="currentClientName"
+                    placeholder="请输入内容"
+                    :disabled="true"
+                    size="mini"
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <div>
+              <el-table border :data="form.params.orderDetails" class="tableClass">
+                <el-table-column align="center" prop="name" label="消费项" width="180px">
+                  <template slot="header">
+                    <span style="color:red">*</span>
+                    <span>销售项</span>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.materialId'" :rules="rules.name" :inline-message="true">
+                      <el-select v-model="scope.row.materialId" placeholder="请选择消费项" size="mini" :disabled="true">
+                        <el-option
+                          v-for="item in materialList"
+                          :key="item.materialId"
+                          :label="item.materialName"
+                          :value="item.materialId"
+                        />
+                      </el-select>
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="num" label="数量" width="180px">
+                  <template slot="header">
+                    <span style="color:red">*</span>
+                    <span>数量</span>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.num'" :rules="rules.num" :inline-message="true">
+                      <el-input-number v-model="scope.row.num" size="mini" :min="1" :disabled="true" />
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="money" label="金额" width="180px">
+                  <template slot="header">
+                    <span style="color:red">*</span>
+                    <span>金额</span>
+                  </template>
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.money'" :rules="rules.money" :inline-message="true">
+                      <el-input
+                        v-model="scope.row.money"
+                        oninput="value=value.replace(/[^0-9.]/g,'')"
+                        size="mini"
+                        :disabled="true"
+                      >
+                        <span slot="suffix">/ 元 </span>
+                      </el-input>
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+                <el-table-column align="center" prop="remark" label="备注">
+                  <template slot-scope="scope">
+                    <el-form-item class="myClass" :prop="'params.orderDetails.' + scope.$index + '.remark'">
+                      <el-input v-model="scope.row.remark" :rows="2" maxlength="500" type="textarea" placeholder="请输入备注" clearable :disabled="true" />
+                    </el-form-item>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="detailCancel">取 消</el-button>
+          </div>
+        </el-dialog>
+
+        <!-- 添加或修改参数配置对话框 -->
+        <el-dialog v-dialogDrag :title="transferTitle" :visible.sync="transferOpen" width="400px" append-to-body>
+          <el-form ref="transferForm" :model="transferForm" :rules="transferRules" label-width="80px">
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="客户" prop="currentClientName">
+                  <el-input v-model="currentClientName" placeholder="请输入用户名称" :disabled="true" />
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row>
-              <el-col :span="12">
-                <el-form-item v-if="transferForm.userId == undefined" label="登录名" prop="userName">
-                  <el-input v-model="transferForm.userName" placeholder="请输入登录名" maxlength="30" />
+              <el-col :span="24">
+                <el-form-item label="汇款日期" prop="transferDate">
+                  <el-date-picker
+                    v-model="transferForm.transferDate"
+                    type="date"
+                    value-format="yyyy-MM-dd"
+                    placeholder="选择日期"
+                    style="width: 280px;"
+                  />
                 </el-form-item>
               </el-col>
-              <el-col :span="12">
-                <el-form-item label="状态">
-                  <el-radio-group v-model="transferForm.status">
-                    <el-radio
-                      v-for="dict in statusOptions"
-                      :key="dict.dictCode"
-                      :label="dict.dictCode"
-                    >{{ dict.dictName }}</el-radio>
-                  </el-radio-group>
+            </el-row>
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="汇款方式" prop="transferWay">
+                  <el-select v-model="transferForm.transferWay" style="width: 280px;">
+                    <el-option
+                      v-for="item in transferOptions"
+                      :key="item.dictCode"
+                      :label="item.dictName"
+                      :value="item.dictCode"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="汇款金额" prop="transferMoney">
+                  <el-input
+                    v-model="transferForm.transferMoney"
+                    oninput="value=value.replace(/[^0-9.]/g,'')"
+                  >
+                    <span slot="suffix">/ 元 </span>
+                  </el-input>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-row>
               <el-col :span="24">
                 <el-form-item label="备注">
-                  <el-input v-model="transferForm.remark" type="textarea" placeholder="请输入内容" />
+                  <el-input v-model="transferForm.remark" :rows="2" maxlength="500" type="textarea" placeholder="请输入备注" clearable />
                 </el-form-item>
               </el-col>
             </el-row>
           </el-form>
           <div slot="footer" class="dialog-footer">
-            <el-button type="primary">确 定</el-button>
-            <el-button>取 消</el-button>
+            <el-button type="primary" @click="submitTransferForm">确 定</el-button>
+            <el-button @click="transferCancel">取 消</el-button>
           </div>
         </el-dialog>
       </el-col>
@@ -297,7 +414,7 @@
 
 <script>
 import { clientTreeSelect, getClient } from '@/api/client'
-import { listSellRecord, updateSellRecord, addSellRecord, getSellRecord, delSellRecord } from '@/api/sellRecord'
+import { listSellRecord, updateSellRecord, addSellRecord, getSellRecord, delSellRecord, payMoney, getSellInfo, clearMoney } from '@/api/sellRecord'
 import { getMaterialByType } from '@/api/material'
 
 export default {
@@ -342,6 +459,8 @@ export default {
       open: false,
       // 转账弹出层
       transferOpen: false,
+      // 详情弹出层
+      detailOpen: false,
       // 表单参数
       form: {
         orderDate: this.getCurrentDate(),
@@ -355,7 +474,8 @@ export default {
         clientId: undefined,
         transferWay: undefined,
         transferMoney: undefined,
-        transferDate: undefined
+        transferDate: undefined,
+        remark: undefined
       },
       rules: {
         orderDate: [{ required: true, message: '请输入订单日期！', trigger: 'blur' }],
@@ -373,7 +493,15 @@ export default {
       // 左侧树点击的客户ID
       currentClientId: undefined,
       // 左侧树点击的客户名称
-      currentClientName: undefined
+      currentClientName: undefined,
+      // 汇款方式字典
+      transferOptions: [],
+      // 汇款表单title
+      transferTitle: undefined,
+      // 现欠款
+      currentDebt: 0,
+      // 累计汇款金额
+      totalSellMoney: 0
     }
   },
   watch: {
@@ -392,6 +520,9 @@ export default {
   created() {
     this.getCLientTree()
     this.getMaterials()
+    this.getDicts('transfer_way').then(response => {
+      this.transferOptions = response.data
+    })
   },
   methods: {
     // 筛选节点
@@ -415,6 +546,11 @@ export default {
         this.sellRecordList = response.data.rows
         this.total = response.data.total
         this.loading = false
+      }
+      )
+      getSellInfo(this.currentClientId).then(response => {
+        this.currentDebt = response.data.currentDebt
+        this.totalSellMoney = response.data.totalSellMoney
       }
       )
     },
@@ -494,6 +630,23 @@ export default {
       }
       this.resetForm('form')
     },
+    /** 客户汇款操作 */
+    handleTransfer() {
+      this.transferReset()
+      this.transferOpen = true
+      this.transferTitle = '客户汇款'
+    },
+    // 表单重置
+    transferReset() {
+      this.transferForm = {
+        clientId: this.currentClientId,
+        transferWay: undefined,
+        transferMoney: undefined,
+        transferDate: this.getCurrentDate(),
+        remark: undefined
+      }
+      this.resetForm('transferForm')
+    },
     /** 查询商品列表 */
     getMaterials() {
       getMaterialByType('0').then(response => {
@@ -524,6 +677,24 @@ export default {
         }
       })
     },
+    /** 汇款提交按钮 */
+    submitTransferForm: function() {
+      this.$refs['transferForm'].validate(valid => {
+        if (valid) {
+          this.transferForm.transferMoney = this.keepTwoDecimalFull(this.transferForm.transferMoney)
+          payMoney(this.transferForm).then(response => {
+            this.msgSuccess('修改成功')
+            this.transferOpen = false
+            this.getList()
+          })
+        }
+      })
+    },
+    // 汇款取消按钮
+    transferCancel() {
+      this.transferOpen = false
+      this.transferReset()
+    },
     keepTwoDecimalFull(num) {
       var result = parseFloat(num)
       if (isNaN(result)) {
@@ -546,6 +717,9 @@ export default {
       this.open = false
       this.reset()
     },
+    detailCancel() {
+      this.detailOpen = false
+    },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset()
@@ -556,7 +730,15 @@ export default {
         this.title = '修改销售记录'
       })
     },
-    /** 删除按钮操作 */
+    moreDetail(row) {
+      this.reset()
+      const id = row.orderId
+      getSellRecord(id).then(response => {
+        this.form = response.data
+        this.detailOpen = true
+        this.title = '销售记录详情'
+      })
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
       const orderIds = row.orderId !== undefined ? [row.orderId] : this.ids
@@ -571,18 +753,24 @@ export default {
         this.msgSuccess('删除成功')
       })
     },
+    /** 删除按钮操作 */
+    clientClearMoney() {
+      const cId = this.currentClientId
+      this.$confirm('客户还欠款' + this.currentDebt + '元，是否确认清账?', '警告', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(function() {
+        return clearMoney(cId)
+      }).then(() => {
+        this.getList()
+        this.msgSuccess('清账成功')
+      })
+    },
     // 多选框选中数据
     handleSelectionChange(selection) {
       this.ids = selection.map(item => item.orderId)
     }
-    // moreDetail(row) {
-    //   this.reset()
-    //   const id = row.orderId
-    //   getSellRecord(id).then(response => {
-    //     this.form = response.data
-    //     this.detailOpen = true
-    //   })
-    // }
   }
 
 }
