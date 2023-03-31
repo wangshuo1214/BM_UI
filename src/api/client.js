@@ -46,3 +46,10 @@ export function clientTreeSelect() {
     method: 'get'
   })
 }
+
+export function getAllClient() {
+  return request({
+    url: '/client/getAll',
+    method: 'get'
+  })
+}
