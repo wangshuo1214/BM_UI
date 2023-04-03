@@ -35,7 +35,7 @@
       :data="transferRecordList"
       border
     >
-      <el-table-column prop="clientName" label="客户名称" />
+      <el-table-column prop="clientId" label="客户名称" :formatter="clientNameFormat" />
       <el-table-column prop="transferMoney" label="转账金额" />
       <el-table-column prop="transferWay" label="转账方式" :formatter="transferWayFormat" />
       <el-table-column label="转账日期" align="center" prop="salaryDate">
@@ -153,6 +153,11 @@ export default {
     // 汇款方式字典翻译
     transferWayFormat(row, column) {
       return this.selectDictName(this.transferWayOptions, row.transferWay)
+    },
+    // 客户名称翻译
+    clientNameFormat(row, column) {
+      const clientObj = this.clients.find((item) => item.clientId + '' === row.clientId + '')
+      return clientObj.clientName
     }
   }
 }
