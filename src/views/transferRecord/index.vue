@@ -26,8 +26,8 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini">重置</el-button>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
     <el-table
@@ -62,6 +62,70 @@
       :limit.sync="queryParams.page.pageSize"
       @pagination="getList"
     />
+
+    <!-- 添加或修改参数配置对话框 -->
+    <el-dialog v-dialogDrag :title="'汇款详情'" :visible.sync="open" width="400px" append-to-body>
+      <el-form ref="form" :model="form" label-width="80px">
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="客户" prop="currentClientName">
+              <el-input v-model="form.clientName" placeholder="请输入用户名称" :disabled="true" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="汇款日期" prop="transferDate">
+              <el-date-picker
+                v-model="form.transferDate"
+                type="date"
+                value-format="yyyy-MM-dd"
+                placeholder="选择日期"
+                style="width: 280px;"
+                :disabled="true"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="汇款方式" prop="transferWay">
+              <el-select v-model="form.transferWay" style="width: 280px;" :disabled="true">
+                <el-option
+                  v-for="item in transferWayOptions"
+                  :key="item.dictCode"
+                  :label="item.dictName"
+                  :value="item.dictCode"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="汇款金额" prop="transferMoney">
+              <el-input
+                v-model="form.transferMoney"
+                oninput="value=value.replace(/[^0-9.]/g,'')"
+                :disabled="true"
+              >
+                <span slot="suffix">/ 元 </span>
+              </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="备注">
+              <el-input v-model="form.remark" :rows="2" maxlength="500" type="textarea" placeholder="请输入备注" :disabled="true" clearable />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -99,7 +163,9 @@ export default {
       // 总条数
       total: 0,
       // 汇款方式字典
-      transferWayOptions: []
+      transferWayOptions: [],
+      // 表单
+      form: {}
     }
   },
   created() {
@@ -120,8 +186,8 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.item.params.salaryDate = undefined
-      this.queryParams.item.employeeId = undefined
+      this.queryParams.item.params.transferDate = undefined
+      this.queryParams.item.clientId = undefined
       this.handleQuery()
     },
     /** 查询采购订单列表 */
@@ -143,6 +209,8 @@ export default {
       this.reset()
       const id = row.id
       getTransferRecord(id).then(response => {
+        this.form = response.data
+        this.open = true
       })
     },
     // 取消按钮
