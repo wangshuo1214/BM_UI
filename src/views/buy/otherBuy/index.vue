@@ -48,10 +48,15 @@
       </el-col>
     </el-row>
 
-    <el-table border>
+    <el-table v-loading="loading" :data="otherDealList" border>
       <el-table-column type="selection" width="50" align="center" />
-      <el-table-column key="otherItem" label="支出项" align="center" prop="otherItem" :show-overflow-tooltip="true" />
-      <el-table-column key="otherDate" label="交易时间" align="center" prop="otherDate" :show-overflow-tooltip="true" />
+      <el-table-column key="dealItem" label="支出项" align="center" prop="dealItem" :show-overflow-tooltip="true" />
+      <!-- <el-table-column key="dealDate" label="交易时间" align="center" prop="dealDate" :show-overflow-tooltip="true" /> -->
+      <el-table-column label="交易时间" align="center" prop="dealDate" width="160">
+        <template slot-scope="scope">
+          <span>{{ parseTime(scope.row.dealDate) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column key="money" label="金额" align="center" prop="money" :show-overflow-tooltip="true" />
       <el-table-column key="remark" label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
       <el-table-column
@@ -77,17 +82,27 @@
 </template>
 
 <script>
+
+import { listOtherDeal } from '@/api/otherDeal'
+
 export default {
   name: 'OtherBuy',
   data() {
     return {
+      // 支出项下拉框
       otherBuyOptions: [],
+      // 列表数据
+      otherDealList: [],
+      // 遮罩层
+      loading: true,
+      // 总条数
+      total: 0,
       // 查询条件
       queryParams: {
         page: {
           pageNum: 1,
           pageSize: 10,
-          orderByColumn: 'otherDate',
+          orderByColumn: undefined,
           orderFlag: 'desc'
         },
         item: {
@@ -101,9 +116,22 @@ export default {
     }
   },
   created() {
+    this.getList()
     this.getDicts('other_buy').then(response => {
       this.otherBuyOptions = response.data
     })
+  },
+  methods: {
+    /** 查询其他交易列表 */
+    getList() {
+      this.loading = true
+      listOtherDeal(this.queryParams).then(response => {
+        this.otherDealList = response.data.rows
+        this.total = response.data.total
+        this.loading = false
+      }
+      )
+    }
   }
 }
 </script>
