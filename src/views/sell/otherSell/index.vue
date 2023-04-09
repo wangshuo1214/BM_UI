@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :inline="true">
-      <el-form-item label="开支项" prop="item.otherItem">
+      <el-form-item label="销售项" prop="item.otherItem">
         <el-select v-model="queryParams.item.otherItem" size="small">
           <el-option
-            v-for="item in otherBuyOptions"
+            v-for="item in otherSellOptions"
             :key="item.dictCode"
             :label="item.dictName"
             :value="item.dictCode"
@@ -52,7 +52,7 @@
 
     <el-table v-loading="loading" :data="otherDealList" border @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="50" align="center" />
-      <el-table-column key="dealItem" label="开支项" align="center" prop="dealItem" :show-overflow-tooltip="true" :formatter="dealItemFormat" />
+      <el-table-column key="dealItem" label="销售项" align="center" prop="dealItem" :show-overflow-tooltip="true" :formatter="dealItemFormat" />
       <!-- <el-table-column key="dealDate" label="交易时间" align="center" prop="dealDate" :show-overflow-tooltip="true" /> -->
       <el-table-column label="交易时间" align="center" prop="dealDate" width="160">
         <template slot-scope="scope">
@@ -96,10 +96,10 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="24">
-            <el-form-item label="开支项" prop="dealItem">
+            <el-form-item label="销售项" prop="dealItem">
               <el-select v-model="form.dealItem" style="width: 280px;">
                 <el-option
-                  v-for="item in otherBuyOptions"
+                  v-for="item in otherSellOptions"
                   :key="item.dictCode"
                   :label="item.dictName"
                   :value="item.dictCode"
@@ -154,7 +154,7 @@
 import { listOtherDeal, addOtherDeal, updateOtherDeal, delOtherDeal, getOtherDeal } from '@/api/otherDeal'
 
 export default {
-  name: 'OtherBuy',
+  name: 'OtherSell',
   data() {
     return {
       // 是否显示弹出层
@@ -165,10 +165,10 @@ export default {
       ids: [],
       // 表单
       form: {
-        type: '1'
+        type: '0'
       },
-      // 支出项下拉框
-      otherBuyOptions: [],
+      // 销售项下拉框
+      otherSellOptions: [],
       // 列表数据
       otherDealList: [],
       // 遮罩层
@@ -185,7 +185,7 @@ export default {
         },
         item: {
           otherItem: undefined,
-          type: '1',
+          type: '0',
           params: {
             dealDate: undefined
           }
@@ -207,8 +207,8 @@ export default {
     }
   },
   created() {
-    this.getDicts('other_buy').then(response => {
-      this.otherBuyOptions = response.data
+    this.getDicts('other_sell').then(response => {
+      this.otherSellOptions = response.data
       this.getList()
     })
   },
@@ -240,7 +240,7 @@ export default {
     },
     // 客户名称翻译
     dealItemFormat(row, column) {
-      const dealItemObj = this.otherBuyOptions.find((item) => item.dictCode + '' === row.dealItem + '')
+      const dealItemObj = this.otherSellOptions.find((item) => item.dictCode + '' === row.dealItem + '')
       return dealItemObj.dictName
     },
     // 表单重置
@@ -250,7 +250,7 @@ export default {
         dealDate: undefined,
         money: undefined,
         remark: undefined,
-        type: '1'
+        type: '0'
       }
       this.resetForm('form')
     },
@@ -258,7 +258,7 @@ export default {
     handleAdd() {
       this.reset()
       this.open = true
-      this.title = '添加其他开支'
+      this.title = '添加其他销售'
     },
     /** 提交按钮 */
     submitForm: function() {
