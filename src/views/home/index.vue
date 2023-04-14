@@ -7,7 +7,7 @@
             <span class="spanTitle">今日销售</span>
           </div>
           <div v-for="o in 1" :key="o" class="text item">
-            {{ '元 ' + o }}
+            {{ '￥ ' + o }}
           </div>
         </el-card>
       </el-col>
@@ -17,7 +17,7 @@
             <span class="spanTitle">本月销售</span>
           </div>
           <div v-for="o in 1" :key="o" class="text item">
-            {{ '元 ' + o }}
+            {{ '￥ ' + o }}
           </div>
         </el-card>
       </el-col>
@@ -27,7 +27,7 @@
             <span class="spanTitle">本年销售</span>
           </div>
           <div v-for="o in 1" :key="o" class="text item">
-            {{ '元 ' + o }}
+            {{ '￥ ' + o }}
           </div>
         </el-card>
       </el-col>
@@ -39,7 +39,7 @@
             <span class="spanTitle">今日支出</span>
           </div>
           <div v-for="o in 1" :key="o" class="text item">
-            {{ '元 ' + o }}
+            {{ '￥ ' + o }}
           </div>
         </el-card>
       </el-col>
@@ -49,7 +49,7 @@
             <span class="spanTitle">本月支出</span>
           </div>
           <div v-for="o in 1" :key="o" class="text item">
-            {{ '元 ' + o }}
+            {{ '￥ ' + o }}
           </div>
         </el-card>
       </el-col>
@@ -59,7 +59,7 @@
             <span class="spanTitle">本年支出</span>
           </div>
           <div v-for="o in 1" :key="o" class="text item">
-            {{ '元 ' + o }}
+            {{ '￥ ' + o }}
           </div>
         </el-card>
       </el-col>
@@ -77,14 +77,23 @@ export default {
 <style>
   .spanTitle{
     color: rgba(0,0,0,.45);
-    font-size: 14px;
+    font-size: 18px;
     line-height: 22px;
+    /* font-weight:bold; */
   }
   .text {
-    font-size: 14px;
+    font-size: 35px;
+    width: 50%;
+    margin-left: auto;
+    font-weight:bold;
+    color: rgb(3, 12, 94);
   }
 
   .item {
     margin-bottom: 18px;
+  }
+  .box-card{
+    opacity: 90%;
+  background-image: linear-gradient(to bottom right, #f2f6fc, #f5f7fa);
   }
 </style>
