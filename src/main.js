@@ -20,6 +20,7 @@ import { handleTree, parseTime, resetForm, selectDictName } from '@/utils/bm'
 import Pagination from '@/components/Pagination'
 import '@/utils/dialog'
 import { getDicts, getSoleDict } from '@/api/system/dict'
+import * as echarts from 'echarts'
 
 /**
  * If you don't want to use mock-server
@@ -35,6 +36,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // 全局方法挂载
+Vue.prototype.$echarts = echarts
 Vue.prototype.getDicts = getDicts
 Vue.prototype.getSoleDict = getSoleDict
 Vue.prototype.handleTree = handleTree
