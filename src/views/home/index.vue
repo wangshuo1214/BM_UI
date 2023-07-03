@@ -5,16 +5,16 @@
         <el-card shadow="hover" style="margin-left: 15px;margin-top: 10px;margin-right: 15px;" class="box-card">
           <div>
             <el-statistic title="今日利润" style="width: 25%; float: left;">
-              <template slot="formatter"> 456/2 </template>
+              <template slot="formatter"> {{daySell - dayCost}} </template>
             </el-statistic>
             <el-statistic title="本月利润" style="width: 25%; float: left;">
-              <template slot="formatter"> 456/2 </template>
+              <template slot="formatter"> {{monthSell - monthCost}} </template>
             </el-statistic>
             <el-statistic title="本年利润" style="width: 25%; float: left;">
-              <template slot="formatter"> 456/2 </template>
+              <template slot="formatter"> {{yearSell - yearCost}} </template>
             </el-statistic>
             <el-statistic title="累计利润" style="width: 25%; float: left;">
-              <template slot="formatter"> 456/2 </template>
+              <template slot="formatter"> {{totalSell - totalCost}} </template>
             </el-statistic>
           </div>
         </el-card>
@@ -32,8 +32,8 @@
               </el-tooltip>
             </span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + daySell }}
           </div>
         </el-card>
       </el-col>
@@ -47,8 +47,8 @@
               </el-tooltip>
             </span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + monthSell }}
           </div>
         </el-card>
       </el-col>
@@ -62,8 +62,8 @@
               </el-tooltip>
             </span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + yearSell }}
           </div>
         </el-card>
       </el-col>
@@ -76,8 +76,8 @@
                 <i class="el-icon-warning-outline" />
               </el-tooltip></span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + totalSell }}
           </div>
         </el-card>
       </el-col>
@@ -92,8 +92,8 @@
                 <i class="el-icon-warning-outline" />
               </el-tooltip></span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + dayCost }}
           </div>
         </el-card>
       </el-col>
@@ -106,8 +106,8 @@
                 <i class="el-icon-warning-outline" />
               </el-tooltip></span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + monthCost }}
           </div>
         </el-card>
       </el-col>
@@ -120,8 +120,8 @@
                 <i class="el-icon-warning-outline" />
               </el-tooltip></span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + yearCost }}
           </div>
         </el-card>
       </el-col>
@@ -134,8 +134,8 @@
                 <i class="el-icon-warning-outline" />
               </el-tooltip></span>
           </div>
-          <div v-for="o in 1" :key="o" class="text item">
-            {{ '￥ ' + o }}
+          <div class="text item">
+            {{ '￥ ' + totalCost }}
           </div>
         </el-card>
       </el-col>
@@ -156,14 +156,73 @@
 </template>
 
 <script>
+import { getHomePage } from '@/api/homePage'
 
 export default {
   name: 'Home',
+  data() {
+    return {
+      dayCost: 0,
+      monthCost: 0,
+      yearCost: 0,
+      totalCost: 0,
+      sevenDayCost:[],
+      sevenDayCostX:[],
+      twelveMonthCost: [],
+      twelveMonthCostX: [],
+      dataCostX:[],
+      dataCostY:[],
+      daySell: 0,
+      monthSell: 0,
+      yearSell: 0,
+      totalSell: 0,
+      sevenDaySell: [],
+      sevenDaySellX: [],
+      twelveMonthSell: [],
+      twelveMonthSellX: [],
+      dataSellX: [],
+      dataSellY: []
+    }
+  },
+  created() {
+    this.getHomePage()
+  },
   mounted() {
     this.sellLine()
     this.costLine()
   },
   methods: {
+    getHomePage(){
+      getHomePage().then(response =>{
+        this.dayCost = response.data.dayCost
+        this.monthCost = response.data.monthCost
+        this.yearCost = response.data.yearCost
+        this.totalCost = response.data.totalCost
+        for(let key in response.data.sevenDayCost){
+          this.sevenDayCost.push(response.data.sevenDayCost[key])
+          this.sevenDayCostX.push(key)
+        }
+        this.dataCostX = this.sevenDayCostX
+        this.dataCostY = this.sevenDayCost
+        for(let key in response.data.twelveMonthCost){
+          this.twelveMonthCost.push(response.data.twelveMonthCost[key])
+          this.twelveMonthCostX.push(key)
+        }
+        this.daySell = response.data.daySell
+        this.monthSell = response.data.monthSell
+        this.yearSell = response.data.yearSell
+        this.totalSell = response.data.totalSell
+        for(let key in response.data.sevenDaySell){
+          this.sevenDaySell.push(response.data.sevenDaySell[key])
+          this.sevenDaySellX.push(key)
+        }
+        for(let key in response.data.twelveMonthSell){
+          this.twelveMonthSell.push(response.data.twelveMonthSell[key])
+          this.twelveMonthSellX.push(key)
+        }
+      })
+      debugger
+    },
     sellLine() {
       var myChart = this.$echarts.init(this.$refs.sellChart)
       // 绘制图表
@@ -184,12 +243,11 @@ export default {
     },
     costLine() {
       var myChart = this.$echarts.init(this.$refs.costChart)
-      // 绘制图表
       myChart.setOption({
         legend: {
-          icon: 'stack',
-          data: ['近7天', '本年'],
-          selectedMode: 'single', // 单选
+          icon: "stack",
+          data: ["近7天", "本年"],
+          selectedMode: "single", // 单选
           selected: {
             近7天: true,
             本年: false
@@ -197,7 +255,7 @@ export default {
         },
         tooltip: {},
         xAxis: {
-          data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+          data: this.dataCostX
         },
         yAxis: {
           name: '支出'
@@ -205,15 +263,55 @@ export default {
         series: [{
           name: '近7天',
           type: 'line',
-          data: [5, 20, 36, 10, 10, 20]
+          data: this.dataCostY
         },
         {
           name: '本年',
           type: 'line',
-          data: [5, 999, 77, 50, 30, 70]
+          data: this.dataCostY
         }
         ]
       })
+      myChart.on("legendselectchanged", obj => {
+        debugger
+        if(obj.name == '近7天'){
+          this.dataCostX = this.sevenDayCostX
+          this.dataCostY = this.sevenDayCost
+        }else{
+          this.dataCostX = this.twelveMonthCostX
+          this.dataCostY = this.twelveMonthCost
+        }
+      });
+      // 绘制图表
+      // myChart.setOption({
+      //   legend: {
+      //     icon: 'stack',
+      //     data: ['近7天', '本年'],
+      //     selectedMode: 'single', // 单选
+      //     selected: {
+      //       近7天: true,
+      //       本年: false
+      //     }
+      //   },
+      //   tooltip: {},
+      //   xAxis: {
+      //     data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+      //   },
+      //   yAxis: {
+      //     name: '支出'
+      //   },
+      //   series: [{
+      //     name: '近7天',
+      //     type: 'line',
+      //     data: [5, 20, 36, 10, 10, 20]
+      //   },
+      //   {
+      //     name: '本年',
+      //     type: 'line',
+      //     data: [5, 999, 77, 50, 30, 70]
+      //   }
+      //   ]
+      // })
     }
   }
 
