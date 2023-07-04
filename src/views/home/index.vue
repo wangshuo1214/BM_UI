@@ -172,6 +172,7 @@ export default {
       twelveMonthCostX: [],
       dataCostX: [],
       dataCostY: [],
+      costFlag: false,
       daySell: 0,
       monthSell: 0,
       yearSell: 0,
@@ -181,7 +182,8 @@ export default {
       twelveMonthSell: [],
       twelveMonthSellX: [],
       dataSellX: [],
-      dataSellY: []
+      dataSellY: [],
+      sellFlag: false
     }
   },
   watch: {
@@ -189,15 +191,20 @@ export default {
       this.$nextTick(() => {
         this.costLine()
       })
+    },
+    dataSellX(){
+      this.$nextTick(() => {
+        this.sellLine()
+      })
     }
   },
   created() {
     this.getHomePage()
   },
-  mounted() {
-    this.sellLine()
-    this.costLine()
-  },
+  // mounted() {
+  //   this.sellLine()
+  //   this.costLine()
+  // },
   methods: {
     getHomePage() {
       getHomePage().then(response => {
@@ -205,27 +212,33 @@ export default {
         this.monthCost = response.data.monthCost
         this.yearCost = response.data.yearCost
         this.totalCost = response.data.totalCost
-        for (const key in response.data.sevenDayCost) {
-          this.sevenDayCost.push(response.data.sevenDayCost[key])
-          this.sevenDayCostX.push(key)
+        const cost7Keys = Object.keys(response.data.sevenDayCost).sort();
+        for (var i = 0; i < cost7Keys.length; i++) {
+          this.sevenDayCost.push(response.data.sevenDayCost[cost7Keys[i]])
+          this.sevenDayCostX.push(cost7Keys[i])
         }
         this.dataCostX = this.sevenDayCostX
         this.dataCostY = this.sevenDayCost
-        for (const key in response.data.twelveMonthCost) {
-          this.twelveMonthCost.push(response.data.twelveMonthCost[key])
-          this.twelveMonthCostX.push(key)
+        const cost12Keys = Object.keys(response.data.twelveMonthCost).sort();
+        for (var i = 0; i < cost12Keys.length; i++) {
+          this.twelveMonthCost.push(response.data.twelveMonthCost[cost12Keys[i]])
+          this.twelveMonthCostX.push(cost12Keys[i])
         }
         this.daySell = response.data.daySell
         this.monthSell = response.data.monthSell
         this.yearSell = response.data.yearSell
         this.totalSell = response.data.totalSell
-        for (const key in response.data.sevenDaySell) {
-          this.sevenDaySell.push(response.data.sevenDaySell[key])
-          this.sevenDaySellX.push(key)
+        const sell7Keys = Object.keys(response.data.sevenDaySell).sort();
+        for (var i = 0; i < sell7Keys.length; i++) {
+          this.sevenDaySell.push(response.data.sevenDaySell[sell7Keys[i]])
+          this.sevenDaySellX.push(sell7Keys[i])
         }
-        for (const key in response.data.twelveMonthSell) {
-          this.twelveMonthSell.push(response.data.twelveMonthSell[key])
-          this.twelveMonthSellX.push(key)
+        this.dataSellX = this.sevenDaySellX
+        this.dataSellY = this.sevenDaySell
+        const sell12Keys = Object.keys(response.data.twelveMonthSell).sort();
+        for (var i = 0; i < sell12Keys.length; i++) {
+          this.twelveMonthSell.push(response.data.twelveMonthSell[sell12Keys[i]])
+          this.twelveMonthSellX.push(sell12Keys[i])
         }
       })
     },
@@ -233,18 +246,44 @@ export default {
       var myChart = this.$echarts.init(this.$refs.sellChart)
       // 绘制图表
       myChart.setOption({
+        legend: {
+          icon: 'stack',
+          data: ['近7天', '近12月'],
+          selectedMode: 'single', // 单选
+          selected: {
+            近7天: !this.sellFlag,
+            近12月: this.sellFlag
+          }
+        },
         tooltip: {},
         xAxis: {
-          data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+          data: this.dataSellX
         },
         yAxis: {
-          name: '收入'
+          name: '销售'
         },
         series: [{
-          name: '收入',
+          name: '近7天',
           type: 'line',
-          data: [5, 20, 36, 10, 10, 20]
-        }]
+          data: this.dataSellY
+        },
+        {
+          name: '近12月',
+          type: 'line',
+          data: this.dataSellY
+        }
+        ]
+      })
+      myChart.on('legendselectchanged', obj => {
+        if (obj.name === '近7天') {
+          this.sellFlag = false
+          this.dataSellX = this.sevenDaySellX
+          this.dataSellY = this.sevenDaySell
+        } else {
+          this.sellFlag = true
+          this.dataSellX = this.twelveMonthSellX
+          this.dataSellY = this.twelveMonthSell
+        }
       })
     },
     costLine() {
@@ -252,11 +291,11 @@ export default {
       myChart.setOption({
         legend: {
           icon: 'stack',
-          data: ['近7天', '本年'],
+          data: ['近7天', '近12月'],
           selectedMode: 'single', // 单选
           selected: {
-            近7天: true,
-            本年: false
+            近7天: !this.costFlag,
+            近12月: this.costFlag
           }
         },
         tooltip: {},
@@ -272,7 +311,7 @@ export default {
           data: this.dataCostY
         },
         {
-          name: '本年',
+          name: '近12月',
           type: 'line',
           data: this.dataCostY
         }
@@ -280,9 +319,11 @@ export default {
       })
       myChart.on('legendselectchanged', obj => {
         if (obj.name === '近7天') {
+          this.costFlag = false
           this.dataCostX = this.sevenDayCostX
           this.dataCostY = this.sevenDayCost
         } else {
+          this.costFlag = true
           this.dataCostX = this.twelveMonthCostX
           this.dataCostY = this.twelveMonthCost
         }
@@ -302,8 +343,8 @@ export default {
   }
   .text {
     font-size: 28px;
-    width: 50%;
-    margin-left: auto;
+    width: 70%;
+    margin-left: 40%;
     line-height: 32px;
     /* font-weight:bold; */
     color: rgba(0,0,0,.85)

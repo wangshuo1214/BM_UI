@@ -434,8 +434,10 @@ export default {
     getEmployeeTree() {
       employeeTreeSelect().then(response => {
         this.employeeOptions = response.data
-        if (this.employeeOptions) {
+        if (this.employeeOptions && this.employeeOptions.length > 0) {
           this.expandDefault.push(this.employeeOptions[0].id)
+        }else{
+          this.loading = false
         }
         this.getList()
       })
@@ -448,6 +450,10 @@ export default {
     /** 查询采购订单列表 */
     getList() {
       this.loading = true
+      if (!(this.employeeOptions && this.employeeOptions.length > 0)) {
+        this.loading = false
+        return
+      }
       this.queryParams.item.employeeId = this.queryParams.item.employeeId ? this.queryParams.item.employeeId : this.employeeOptions[0].id
       getEmployee(this.queryParams.item.employeeId).then(response => {
         this.currentEmployeeName = response.data.employeeName

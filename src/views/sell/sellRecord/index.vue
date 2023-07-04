@@ -534,8 +534,10 @@ export default {
     getCLientTree() {
       clientTreeSelect().then(response => {
         this.clientOptions = response.data
-        if (this.clientOptions) {
+        if (this.clientOptions && this.clientOptions.length > 0) {
           this.expandDefault.push(this.clientOptions[0].id)
+        }else{
+          this.loading = false
         }
       })
     },
