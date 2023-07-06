@@ -355,7 +355,7 @@ export default {
   }
   .box-card{
     height: 100px;
-    opacity: 90%;
+    /* opacity: 90%; */
   /* background-image: linear-gradient(to bottom right, #f2f6fc, #f5f7fa); */
   }
 </style>

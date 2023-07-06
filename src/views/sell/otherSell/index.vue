@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :inline="true">
-      <el-form-item label="销售项" prop="item.otherItem">
-        <el-select v-model="queryParams.item.otherItem" size="small">
+      <el-form-item label="销售项" prop="item.dealItem">
+        <el-select v-model="queryParams.item.dealItem" size="small">
           <el-option
             v-for="item in otherSellOptions"
-            :key="item.dictCode"
-            :label="item.dictName"
-            :value="item.dictCode"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
@@ -100,9 +100,9 @@
               <el-select v-model="form.dealItem" style="width: 280px;">
                 <el-option
                   v-for="item in otherSellOptions"
-                  :key="item.dictCode"
-                  :label="item.dictName"
-                  :value="item.dictCode"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
                 />
               </el-select>
             </el-form-item>
@@ -152,6 +152,7 @@
 <script>
 
 import { listOtherDeal, addOtherDeal, updateOtherDeal, delOtherDeal, getOtherDeal } from '@/api/otherDeal'
+import { getOtherDealItemByType } from '@/api/otherDealItem'
 
 export default {
   name: 'OtherSell',
@@ -184,7 +185,7 @@ export default {
           orderFlag: 'desc'
         },
         item: {
-          otherItem: undefined,
+          dealItem: undefined,
           type: '0',
           params: {
             dealDate: undefined
@@ -207,12 +208,16 @@ export default {
     }
   },
   created() {
-    this.getDicts('other_sell').then(response => {
-      this.otherSellOptions = response.data
-      this.getList()
-    })
+    this.getOtherDealItemByType()
   },
   methods: {
+    // 初始化其他交易类型
+    getOtherDealItemByType(){
+      getOtherDealItemByType('0').then(response => {
+        this.otherSellOptions = response.data
+      })
+      this.getList()
+    },
     /** 查询其他交易列表 */
     getList() {
       this.loading = true
@@ -234,14 +239,14 @@ export default {
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.queryParams.item.otherItem = undefined
+      this.queryParams.item.dealItem = undefined
       this.queryParams.item.params.dealDate = undefined
       this.handleQuery()
     },
     // 客户名称翻译
     dealItemFormat(row, column) {
-      const dealItemObj = this.otherSellOptions.find((item) => item.dictCode + '' === row.dealItem + '')
-      return dealItemObj.dictName
+      const dealItemObj = this.otherSellOptions.find((item) => item.id + '' === row.dealItem + '')
+      return dealItemObj.name
     },
     // 表单重置
     reset() {
