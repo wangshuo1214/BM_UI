@@ -104,3 +104,19 @@ export const getRouters = () => {
     method: 'get'
   })
 }
+
+export function getUserProfile() {
+  return request({
+    url: '/system/user/getProfile',
+    method: 'get'
+  })
+}
+
+// 查询角色未授权用户列表
+export function updateUserProfile(data) {
+  return request({
+    url: '/system/user/updateProfile',
+    method: 'post',
+    data
+  })
+}

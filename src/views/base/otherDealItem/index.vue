@@ -92,13 +92,13 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="150px">
         <el-row>
           <el-col :span="24">
-            <el-form-item label="其他交易项名称" prop="name" >
-              <el-input v-model="form.name" placeholder="请输入其他交易项名称" maxlength="30"  class="inputHeight" />
+            <el-form-item label="其他交易项名称" prop="name">
+              <el-input v-model="form.name" placeholder="请输入其他交易项名称" maxlength="30" class="inputHeight" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
-            <el-col :span="24">
+          <el-col :span="24">
             <el-form-item label="其他交易项类型" prop="type">
               <el-select v-model="form.type" size="small" style="width: 100%;">
                 <el-option
@@ -147,7 +147,7 @@ export default {
       // 其他交易表格数据
       otherDealItemList: [],
       // 交易项字典
-      otherDealItemTypeOptions:[],
+      otherDealItemTypeOptions: [],
       // 总条数
       total: 0,
       // 查询条件
@@ -170,7 +170,7 @@ export default {
           { min: 2, max: 20, message: '其他交易项名称长度必须介于 2 和 20 之间', trigger: 'blur' }
         ],
         type: [
-            { required: true, message: '其他交易项类型不能为空', trigger: 'blur' }
+          { required: true, message: '其他交易项类型不能为空', trigger: 'blur' }
         ]
       }
     }

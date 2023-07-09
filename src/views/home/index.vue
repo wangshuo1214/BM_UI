@@ -192,7 +192,7 @@ export default {
         this.costLine()
       })
     },
-    dataSellX(){
+    dataSellX() {
       this.$nextTick(() => {
         this.sellLine()
       })
@@ -212,15 +212,15 @@ export default {
         this.monthCost = response.data.monthCost
         this.yearCost = response.data.yearCost
         this.totalCost = response.data.totalCost
-        const cost7Keys = Object.keys(response.data.sevenDayCost).sort();
+        const cost7Keys = Object.keys(response.data.sevenDayCost).sort()
         for (var i = 0; i < cost7Keys.length; i++) {
           this.sevenDayCost.push(response.data.sevenDayCost[cost7Keys[i]])
           this.sevenDayCostX.push(cost7Keys[i])
         }
         this.dataCostX = this.sevenDayCostX
         this.dataCostY = this.sevenDayCost
-        const cost12Keys = Object.keys(response.data.twelveMonthCost).sort();
-        for (var i = 0; i < cost12Keys.length; i++) {
+        const cost12Keys = Object.keys(response.data.twelveMonthCost).sort()
+        for (let i = 0; i < cost12Keys.length; i++) {
           this.twelveMonthCost.push(response.data.twelveMonthCost[cost12Keys[i]])
           this.twelveMonthCostX.push(cost12Keys[i])
         }
@@ -228,15 +228,15 @@ export default {
         this.monthSell = response.data.monthSell
         this.yearSell = response.data.yearSell
         this.totalSell = response.data.totalSell
-        const sell7Keys = Object.keys(response.data.sevenDaySell).sort();
-        for (var i = 0; i < sell7Keys.length; i++) {
+        const sell7Keys = Object.keys(response.data.sevenDaySell).sort()
+        for (let i = 0; i < sell7Keys.length; i++) {
           this.sevenDaySell.push(response.data.sevenDaySell[sell7Keys[i]])
           this.sevenDaySellX.push(sell7Keys[i])
         }
         this.dataSellX = this.sevenDaySellX
         this.dataSellY = this.sevenDaySell
-        const sell12Keys = Object.keys(response.data.twelveMonthSell).sort();
-        for (var i = 0; i < sell12Keys.length; i++) {
+        const sell12Keys = Object.keys(response.data.twelveMonthSell).sort()
+        for (let i = 0; i < sell12Keys.length; i++) {
           this.twelveMonthSell.push(response.data.twelveMonthSell[sell12Keys[i]])
           this.twelveMonthSellX.push(sell12Keys[i])
         }

@@ -212,7 +212,7 @@ export default {
   },
   methods: {
     // 初始化其他交易类型
-    getOtherDealItemByType(){
+    getOtherDealItemByType() {
       getOtherDealItemByType('1').then(response => {
         this.otherBuyOptions = response.data
       })
