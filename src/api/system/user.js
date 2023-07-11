@@ -120,3 +120,11 @@ export function updateUserProfile(data) {
     data
   })
 }
+
+export function updatePwd(data) {
+  return request({
+    url: '/system/user/updatePwd',
+    method: 'post',
+    data
+  })
+}

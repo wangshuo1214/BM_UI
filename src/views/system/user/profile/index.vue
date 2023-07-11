@@ -8,7 +8,6 @@
           </div>
           <el-row>
             <el-col :span="8">
-              <div>
                 <el-upload
                   class="avatar-uploader"
                   action="https://jsonplaceholder.typicode.com/posts/"
@@ -16,10 +15,9 @@
                   :on-success="handleAvatarSuccess"
                   :before-upload="beforeAvatarUpload"
                 >
-                  <img v-if="imageUrl" :src="imageUrl" class="avatar">
-                  <i v-else class="el-icon-plus avatar-uploader-icon" />
+                  <img v-if="imageUrl" :src="imageUrl" class="avatar" style="border: 1px dashed #6a5858;margin-left: 50px;margin-top: 20px;">
+                  <i v-else class="el-icon-plus avatar-uploader-icon" style="border: 1px dashed #6a5858;margin-left: 50px;margin-top: 20px;" />
                 </el-upload>
-              </div>
             </el-col>
             <el-col :span="16">
               <el-form ref="form" :model="user" :rules="rules" label-width="80px">
@@ -105,7 +103,7 @@ export default {
 </script>
 <style scoped>
 .avatar-uploader .el-upload {
-    border: 1px dashed #6a5858;
+    border: 1px dashed #6a5858 !important;
     border-radius: 6px;
     cursor: pointer;
     position: relative;
