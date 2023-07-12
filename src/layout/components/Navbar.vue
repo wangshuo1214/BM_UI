@@ -15,7 +15,7 @@
           <router-link to="/user/profile">
             <el-dropdown-item>个人中心</el-dropdown-item>
           </router-link>
-          <el-dropdown-item @click="updPwd">
+          <el-dropdown-item @click.native="updPwd">
             <span>修改密码</span>
           </el-dropdown-item>
           <el-dropdown-item divided @click.native="logout">
@@ -27,25 +27,31 @@
 
     <!-- 添加或修改参数配置对话框 -->
     <el-dialog v-dialogDrag :title="title" :visible.sync="open" width="600px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="100px">
+      <el-form ref="form" :model="form.params" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="24">
             <el-form-item label="旧密码" prop="oldPwd">
-              <el-input v-model="form.params.oldPwd" placeholder="请输入旧密码" maxlength="30" />
+              <el-input v-model="form.params.oldPwd" placeholder="请输入旧密码" maxlength="30" :type="oldPwdType">
+                <i slot="suffix" :class="oldPwdIcon" @click="oldPwsShow"></i>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
             <el-form-item label="新密码" prop="newPwd">
-              <el-input v-model="form.params.newPwd" placeholder="请输入新密码" maxlength="30" />
+              <el-input v-model="form.params.newPwd" placeholder="请输入新密码" maxlength="30" :type="newPwdType" >
+                <i slot="suffix" :class="newPwdIcon" @click="newPwsShow"></i>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
             <el-form-item label="确认密码" prop="confirmPwd">
-              <el-input v-model="form.params.confirmPwd" type="textarea" placeholder="请确认密码" maxlength="500" />
+              <el-input v-model="form.params.confirmPwd" placeholder="请确认密码" maxlength="500" :type="confirmPwdType"  >
+                <i slot="suffix" :class="confirmPwdIcon" @click="confirmPwsShow"></i>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -75,6 +81,12 @@ export default {
     return {
       title: '',
       open: false,
+      oldPwdType: 'password',
+      oldPwdIcon:"el-input__icon el-icon-view",
+      newPwdType: 'password',
+      newPwdIcon:"el-input__icon el-icon-view",
+      confirmPwdType: 'password',
+      confirmPwdIcon:"el-input__icon el-icon-view",
       // 表单参数
       form: {
         params: {
@@ -124,6 +136,40 @@ export default {
     }
   },
   methods: {
+    //密码的隐藏和显示
+    oldPwsShow(){
+      //点击图标是密码隐藏或显示
+        if( this.oldPwdType=="text"){
+            this.oldPwdType="password";
+            //更换图标
+            this.oldPwdIcon="el-input__icon el-icon-view";
+        }else {
+            this.oldPwdType="text";
+            this.oldPwdIcon="el-input__icon el-icon-magic-stick";
+        };
+    },
+    newPwsShow(){
+      //点击图标是密码隐藏或显示
+        if( this.newPwdType=="text"){
+            this.newPwdType="password";
+            //更换图标
+            this.newPwdIcon="el-input__icon el-icon-view";
+        }else {
+            this.newPwdType="text";
+            this.newPwdIcon="el-input__icon el-icon-magic-stick";
+        };
+    },
+    confirmPwsShow(){
+      //点击图标是密码隐藏或显示
+        if( this.confirmPwdType=="text"){
+            this.confirmPwdType="password";
+            //更换图标
+            this.confirmPwdIcon="el-input__icon el-icon-view";
+        }else {
+            this.confirmPwdType="text";
+            this.confirmPwdIcon="el-input__icon el-icon-magic-stick";
+        };
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
@@ -146,7 +192,7 @@ export default {
       this.$refs['form'].validate(valid => {
         if (valid) {
            updatePwd(this.form).then(response => {
-              this.msgSuccess('新增成功')
+              this.msgSuccess('修改成功')
               this.open = false
             })
         }
@@ -154,7 +200,7 @@ export default {
     },
     // 表单重置
     reset() {
-      this.form = {
+      this.form.params = {
         oldPwd: undefined,
         newPwd: undefined,
         confirmPwd: undefined
