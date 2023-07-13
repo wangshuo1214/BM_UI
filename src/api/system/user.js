@@ -128,3 +128,11 @@ export function updatePwd(data) {
     data
   })
 }
+
+export function uploadAvatar(data) {
+  return request({
+    url: '/system/user/avatar',
+    method: 'post',
+    data
+  })
+}

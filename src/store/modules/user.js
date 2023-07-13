@@ -50,7 +50,8 @@ const user = {
           if (!data) {
             return reject(response.message)
           }
-          const { name, avatar, roles, permissions } = data
+          const { name, roles, permissions } = data
+          const avatar = (data.avatar == "" || data.avatar == null) ? require("@/assets/images/defaultProfile.png") : process.env.VUE_APP_BASE_API + data.avatar;
           if (roles && roles.length > 0) { // 验证返回的roles是否是一个非空数组
             commit('SET_ROLES', roles)
             commit('SET_PERMISSIONS', permissions)

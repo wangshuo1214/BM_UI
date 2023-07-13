@@ -8,16 +8,9 @@
           </div>
           <el-row>
             <el-col :span="8">
-                <el-upload
-                  class="avatar-uploader"
-                  action="https://jsonplaceholder.typicode.com/posts/"
-                  :show-file-list="false"
-                  :on-success="handleAvatarSuccess"
-                  :before-upload="beforeAvatarUpload"
-                >
-                  <img v-if="imageUrl" :src="imageUrl" class="avatar" style="border: 1px dashed #6a5858;margin-left: 50px;margin-top: 20px;">
-                  <i v-else class="el-icon-plus avatar-uploader-icon" style="border: 1px dashed #6a5858;margin-left: 50px;margin-top: 20px;" />
-                </el-upload>
+              <div>
+                <userAvatar :user="user" />
+              </div>
             </el-col>
             <el-col :span="16">
               <el-form ref="form" :model="user" :rules="rules" label-width="80px">
@@ -47,19 +40,20 @@
 
 <script>
 import { getUserProfile, updateUserProfile } from '@/api/system/user'
+import userAvatar from "./userAvatar";
 
 export default {
   name: 'Profile',
+  components: { userAvatar },
   data() {
     return {
       user: {},
-      imageUrl: '',
       // 表单校验
       rules: {
         realName: [
           { required: true, message: '用户昵称不能为空', trigger: 'blur' }
         ]
-      }
+      },
     }
   },
   created() {
@@ -75,25 +69,10 @@ export default {
       this.$refs['form'].validate(valid => {
         if (valid) {
           updateUserProfile(this.user).then(response => {
-            this.$modal.msgSuccess('修改成功')
+            this.msgSuccess('修改成功')
           })
         }
       })
-    },
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw)
-    },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === 'image/jpeg'
-      const isLt2M = file.size / 1024 / 1024 < 2
-
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
-      }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      return isJPG && isLt2M
     },
     close() {
       this.$tab.closePage()
