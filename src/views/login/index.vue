@@ -1,7 +1,17 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
+    <div id="stars" style="width: 100%;
+          height: 100vh;
+          margin: auto;
+          overflow: hidden;">
+        <div class="star" style="top: 0px;left: 200px;"></div>
+        <div class="star" style="top: 0px;left: 300px;"></div>
+        <div class="star" style="top: 0px;left: 400px;"></div>
+        <div class="star" style="top: 0px;left: 500px;"></div>
+        <div class="star" style="top: 0px;left: 600px;"></div>
+        <div class="star" style="top: 0px;left: 700px;"></div>
+      
+    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left" autocomplete="off">
       <div class="title-container">
         <h3 class="title">Business Managemnet</h3>
       </div>
@@ -45,6 +55,7 @@
 
     </el-form>
   </div>
+  </div>
 </template>
 
 <script>
@@ -74,6 +85,9 @@ export default {
       immediate: true
     }
   },
+  mounted() {
+    this.init()
+},
   methods: {
     showPwd() {
       if (this.passwordType === 'password') {
@@ -100,12 +114,91 @@ export default {
           return false
         }
       })
+    },
+    init() {
+      var stars = document.getElementById('stars')
+      // js随机生成流星
+      for (var j = 0; j < 30; j++) {
+        var newStar = document.createElement("div")
+        newStar.className = "star"
+        newStar.style.top = this.randomDistance(500, -100) + 'px'
+        newStar.style.left = this.randomDistance(1300, 300) + 'px'
+        stars.appendChild(newStar)
+      }
+      var star = document.getElementsByClassName('star')
+
+      // 给流星添加动画延时
+      for (var i = 0, len = star.length; i < len; i++) {
+        star[i].style.animationDelay = i % 6 == 0 ? '0s' : i * 0.8 + 's'
+      }
+    },
+    randomDistance(max, min) {
+      var distance = Math.floor(Math.random() * (max - min + 1) + min)
+      return distance
     }
   }
 }
 </script>
 
 <style lang="scss">
+#stars {
+  margin: 0 auto;
+  max-width: 1600px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+.star {
+  display: block;
+  width: 1px;
+  background: transparent;
+  position: relative;
+  opacity: 0;
+  /*过渡动画*/
+  animation: star-fall 2s linear infinite;
+  -webkit-animation: star-fall 2s linear infinite;
+  -moz-animation: star-fall 2s linear infinite;
+}
+
+.star:after {
+  content: '';
+  display: block;
+  border: 0px solid #fff;
+  border-width: 0px 90px 2px 90px;
+  border-color: transparent transparent transparent rgba(255, 255, 255, .5);
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, .1);
+  /*变形*/
+  transform: rotate(-45deg) translate3d(1px, 3px, 0);
+  -webkit-transform: rotate(-45deg) translate3d(1px, 3px, 0);
+  -moz-transform: rotate(-45deg) translate3d(1px, 3px, 0);
+  transform-origin: 0% 100%;
+  -webkit-transform-origin: 0% 100%;
+  -moz-transform-origin: 0% 100%;
+}
+
+@keyframes star-fall {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translate3d(0, 0, 0);
+    -webkit-transform: scale(0.5) translate3d(0, 0, 0);
+    -moz-transform: scale(0.5) translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(-200px, 200px, 0);
+    -webkit-transform: translate3d(-200px, 200px, 0);
+    -moz-transform: translate3d(-200px, 200px, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2) translate3d(-300px, 300px, 0);
+    -webkit-transform: scale(1.2) translate3d(-300px, 300px, 0);
+    -moz-transform: scale(1.2) translate3d(-300px, 300px, 0);
+  }
+}
 
 $bg:#283443;
 $light_gray:#fff;
@@ -119,6 +212,8 @@ $cursor: #fff;
 
 /* reset element-ui css */
 .login-container {
+  background-image: url('../../assets/images/login.jpg');
+  background-size: 100% 100%;
   .el-input {
     display: inline-block;
     height: 47px;
@@ -135,8 +230,10 @@ $cursor: #fff;
       caret-color: $cursor;
 
       &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px $bg inset !important;
-        -webkit-text-fill-color: $cursor !important;
+        -webkit-transition-delay: 99999s;
+        -webkit-transition: color 99999s ease-out, background-color 99999s ease-out;
+        // box-shadow: 0 0 0px 1000px white inset !important;
+        // -webkit-text-fill-color: $cursor !important;
       }
     }
   }
@@ -166,7 +263,7 @@ $light_gray:#eee;
     width: 520px;
     max-width: 100%;
     padding: 160px 35px 0;
-    margin: 0 auto;
+    margin: auto;
     overflow: hidden;
   }
 
