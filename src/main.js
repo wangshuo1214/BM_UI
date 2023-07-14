@@ -35,6 +35,9 @@ if (process.env.NODE_ENV === 'production') {
   mockXHR()
 }
 
+// 修改 el-dialog 默认点击遮照为不关闭
+ElementUI.Dialog.props.closeOnClickModal.default = false
+
 // 全局方法挂载
 Vue.prototype.$echarts = echarts
 Vue.prototype.getDicts = getDicts
